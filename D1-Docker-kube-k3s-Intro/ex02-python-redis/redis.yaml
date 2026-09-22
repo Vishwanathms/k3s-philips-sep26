@@ -1,0 +1,52 @@
+# ex02 - Redis backend. Service is named "redis" on purpose: the app image
+# defaults REDIS_HOST to "redis", so no wiring is needed yet (see ex03 for
+# overriding it explicitly).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  # NodePort so you can also reach Redis from the host with
+  #   redis-cli -h <node-ip> -p <nodePort>
+  # In-cluster clients (the python app) still use the stable name "redis:6379".
+  # NOTE: NodePort exposes an unauthenticated Redis on every node - fine for a
+  # single-node training box, never do this in a real environment.
+  type: NodePort
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      # nodePort: 30379   # optional: pin it; otherwise k3s picks 30000-32767
