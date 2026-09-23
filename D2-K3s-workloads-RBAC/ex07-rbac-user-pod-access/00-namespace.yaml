@@ -1,0 +1,7 @@
+# ex07 · step 1 — isolate the exercise
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rbac-user-pod-demo
+  labels:
+    purpose: rbac-user-pod-access-demo

@@ -1,0 +1,13 @@
+# ex04 - the same value from ex03, now externalised into a ConfigMap.
+# Change it here + restart the Deployment instead of editing the pod spec.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: python-app-config
+  labels:
+    app: python-app
+data:
+  REDIS_HOST: "redis-primary"
+  # add more non-secret settings here as the app grows, e.g.:
+  # LOG_LEVEL: "info"
+  # APP_ENV: "training"

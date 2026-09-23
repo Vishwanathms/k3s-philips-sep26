@@ -1,0 +1,14 @@
+# ex07 · step 4 — read-only pod access: get/list/watch pods + read their logs.
+# No create/update/delete/exec, and nothing outside the "pods" resource.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: rbac-user-pod-demo
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]

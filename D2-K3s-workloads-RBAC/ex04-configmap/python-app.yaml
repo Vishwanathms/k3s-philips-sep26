@@ -1,0 +1,58 @@
+# ex04 - REDIS_HOST now comes from the ConfigMap, not a hard-coded value.
+#
+# Two consumption styles - this file uses (A). See README for (B).
+#   (A) valueFrom.configMapKeyRef : map one ConfigMap key -> one env var (explicit)
+#   (B) envFrom.configMapRef      : import every key as an env var (bulk)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app
+  labels:
+    app: python-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      containers:
+        - name: python-app
+          image: vishwacloudlab/pythonapp:v4-var
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: python-app-config
+                  key: REDIS_HOST
+          # (B) alternative - replace the whole env: block above with:
+          # envFrom:
+          #   - configMapRef:
+          #       name: python-app-config
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-app
+  labels:
+    app: python-app
+spec:
+  type: NodePort
+  selector:
+    app: python-app
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

@@ -1,0 +1,15 @@
+# ex06 · step 5 — bind the Role to the ServiceAccount
+#   subject  nginx-operator   --gets-->   role  nginx-deployment-manager
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nginx-deployment-manager-binding
+  namespace: rbac-nginx-demo
+subjects:
+  - kind: ServiceAccount
+    name: nginx-operator
+    namespace: rbac-nginx-demo
+roleRef:
+  kind: Role
+  name: nginx-deployment-manager
+  apiGroup: rbac.authorization.k8s.io

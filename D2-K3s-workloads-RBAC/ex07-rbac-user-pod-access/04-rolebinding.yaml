@@ -1,0 +1,16 @@
+# ex07 · step 5 — grant pod-reader to the real Kubernetes User "alice"
+# (a human identity authenticated by an x509 client certificate, not a
+# ServiceAccount). See LAB-MANUAL.md for how "alice" is created.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-reader-binding
+  namespace: rbac-user-pod-demo
+subjects:
+  - kind: User
+    name: alice
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io

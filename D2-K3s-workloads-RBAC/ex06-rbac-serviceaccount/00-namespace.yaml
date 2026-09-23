@@ -1,0 +1,7 @@
+# ex06 · step 1 — a dedicated namespace so the whole lab tears down in one command
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rbac-nginx-demo
+  labels:
+    purpose: rbac-training

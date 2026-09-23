@@ -1,0 +1,32 @@
+# ex06 · step 4 — a Role that can manage ONLY the Deployment named "nginx-deploy"
+#
+# resourceNames pins the rule to one object. Note the separate rule for the
+# "deployments/scale" subresource: `kubectl scale` writes to .../scale, not to
+# the deployment object itself, so without it scaling is denied.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: nginx-deployment-manager
+  namespace: rbac-nginx-demo
+rules:
+  # manage this one deployment (read + edit, but NOT create/delete)
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["nginx-deploy"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+
+  # allow `kubectl scale deployment/nginx-deploy`
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale"]
+    resourceNames: ["nginx-deploy"]
+    verbs: ["get", "update", "patch"]
+
+  # read pods so students can see the effect of scaling
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+  # read the deployment's rollout status / replicasets (optional but handy)
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]

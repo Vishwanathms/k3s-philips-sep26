@@ -1,0 +1,26 @@
+# ex06 · step 8 (optional) — use the ServiceAccount from INSIDE the cluster.
+#
+# This pod runs kubectl as nginx-operator. Its token is auto-mounted at
+#   /var/run/secrets/kubernetes.io/serviceaccount/token
+# and kubectl-in-a-pod picks up the in-cluster config automatically.
+# The pod therefore has EXACTLY the permissions of nginx-deployment-manager:
+# it can scale nginx-deploy but cannot delete it or touch other deployments.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: operator-box
+  namespace: rbac-nginx-demo
+spec:
+  serviceAccountName: nginx-operator
+  containers:
+    - name: kubectl
+      image: rancher/kubectl:v1.36.2      # any kubectl image; keep within 1 minor of the server
+      # rancher/kubectl is a minimal image: it does not include sh or sleep.
+      # `kubectl proxy` is a long-running kubectl process, leaving the pod
+      # available for the `kubectl exec ... operator-box -- kubectl ...` tests.
+      command: ["kubectl"]
+      args: ["proxy", "--address=0.0.0.0", "--accept-hosts=.*"]
+      resources:
+        requests: { cpu: 10m, memory: 16Mi }
+        limits:   { cpu: 100m, memory: 64Mi }
+  restartPolicy: Never

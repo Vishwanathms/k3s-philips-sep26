@@ -1,0 +1,52 @@
+# ex03 - the app image reads REDIS_HOST from the environment. Here we pass it
+# explicitly so the app finds Redis at the "redis-primary" Service.
+#
+# Try it both ways:
+#   1. comment out the env: block  -> app tries "redis", DNS fails, app errors
+#   2. put it back                 -> app connects to "redis-primary"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app
+  labels:
+    app: python-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      containers:
+        - name: python-app
+          image: vishwacloudlab/pythonapp:v4-var
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_HOST
+              value: "redis-primary"      # <-- input to the image
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-app
+  labels:
+    app: python-app
+spec:
+  type: NodePort
+  selector:
+    app: python-app
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

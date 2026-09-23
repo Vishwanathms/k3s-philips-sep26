@@ -1,0 +1,58 @@
+# ex05 - same app as ex04, plus imagePullSecrets so the kubelet can authenticate
+# to Docker Hub when pulling the image.
+#
+# vishwacloudlab/pythonapp:v4-var is public, so the pull works without this too -
+# but adding the secret (a) lets you pull PRIVATE images and (b) lifts the
+# Docker Hub anonymous pull-rate limit.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app
+  labels:
+    app: python-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-creds        # <-- the Secret created in the README
+      containers:
+        - name: python-app
+          image: vishwacloudlab/pythonapp:v4-var
+          # imagePullPolicy: Always    # force a re-pull to see auth happen
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: python-app-config
+                  key: REDIS_HOST
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-app
+  labels:
+    app: python-app
+spec:
+  type: NodePort
+  selector:
+    app: python-app
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
