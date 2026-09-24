@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-headless
+  namespace: day02-networking
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: web-headless }
+  template:
+    metadata:
+      labels: { app: web-headless }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-headless
+  namespace: day02-networking
+spec:
+  clusterIP: None
+  selector: { app: web-headless }
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

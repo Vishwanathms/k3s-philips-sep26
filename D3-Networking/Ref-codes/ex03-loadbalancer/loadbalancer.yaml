@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-loadbalancer
+  namespace: day02-networking
+spec:
+  type: LoadBalancer
+  selector: { app: web }
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 80

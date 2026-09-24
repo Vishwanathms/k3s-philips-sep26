@@ -1,0 +1,28 @@
+# Requires a CNI/network-policy controller that enforces NetworkPolicy.
+# k3s includes the kube-router network-policy controller unless disabled.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web-default-deny-ingress
+  namespace: day02-networking
+spec:
+  podSelector:
+    matchLabels: { app: web }
+  policyTypes: [Ingress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web-allow-approved-clients
+  namespace: day02-networking
+spec:
+  podSelector:
+    matchLabels: { app: web }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { access: web-allowed }
+      ports:
+        - protocol: TCP
+          port: 80
