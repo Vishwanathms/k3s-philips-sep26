@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: redis-client
-  namespace: day02-networking
+  namespace: d03-networking
   labels:
     access: redis-unapproved
 spec:

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: python-app
-  namespace: day02-networking
+  namespace: d03-networking
   labels:
     app: python-app
 spec:
@@ -32,7 +32,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: python-app
-  namespace: day02-networking
+  namespace: d03-networking
 spec:
   type: ClusterIP
   selector:

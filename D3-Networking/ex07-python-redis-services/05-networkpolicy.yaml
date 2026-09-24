@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: redis-default-deny-ingress
-  namespace: day02-networking
+  namespace: d03-networking
 spec:
   podSelector:
     matchLabels:
@@ -14,7 +14,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: redis-allow-python-app
-  namespace: day02-networking
+  namespace: d03-networking
 spec:
   podSelector:
     matchLabels:
