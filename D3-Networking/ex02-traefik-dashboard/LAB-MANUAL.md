@@ -191,9 +191,9 @@ In the dashboard, open **HTTP → HTTP Routers** and find these:
 
 | Router name (as shown) | Comes from | What to notice |
 |---|---|---|
-| `day05-ingress-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | provider `kubernetes` = a standard Ingress; rule `Host(\`web.k3s.local\`)` |
-| `day05-ingress-hosts-api-k3s-local@kubernetes` | Lab 1 `Ingress` | one router per `host` rule |
-| `websecure-day05-ingress-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | an Ingress with no entrypoint annotation gets a router on **both** `web` and `websecure` |
+| `day03-ingress-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | provider `kubernetes` = a standard Ingress; rule `Host(\`web.k3s.local\`)` |
+| `day03-ingress-hosts-api-k3s-local@kubernetes` | Lab 1 `Ingress` | one router per `host` rule |
+| `websecure-day03-ingress-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | an Ingress with no entrypoint annotation gets a router on **both** `web` and `websecure` |
 | `kube-system-traefik-dashboard-…@kubernetescrd` | Step 2 | provider `kubernetescrd` = an `IngressRoute` CRD; entrypoint `traefik` |
 | `ping@internal`, `prometheus@internal` | Traefik itself | built-in routers |
 
@@ -202,7 +202,7 @@ Click the **web** router. The detail page shows the full path of a request:
 Compare the server IPs with:
 
 ```bash
-kubectl get endpointslices -n day05-ingress -l kubernetes.io/service-name=web \
+kubectl get endpointslices -n day03-ingress -l kubernetes.io/service-name=web \
   -o jsonpath='{.items[0].endpoints[*].addresses}{"\n"}'
 ```
 
@@ -213,7 +213,7 @@ Service's ClusterIP.
 reload needed:
 
 ```bash
-kubectl scale deployment/web -n day05-ingress --replicas=3
+kubectl scale deployment/web -n day03-ingress --replicas=3
 ```
 
 Refresh the router's service page and you should see three servers.
@@ -234,7 +234,7 @@ curl -s http://localhost:9000/api/version; echo
 # {"Version":"3.7.8","Codename":"langres",...}
 
 curl -s http://localhost:9000/api/http/routers | grep -o '"name":"[^"]*"'
-# "name":"day05-ingress-hosts-api-k3s-local@kubernetes"
+# "name":"day03-ingress-hosts-api-k3s-local@kubernetes"
 # "name":"kube-system-traefik-dashboard-...@kubernetescrd"
 # ...
 
@@ -269,7 +269,7 @@ Useful endpoints: `/api/http/routers`, `/api/http/services`,
 Lab 1 resources (if you deployed them only for this lab):
 
 ```bash
-kubectl delete namespace day05-ingress
+kubectl delete namespace day03-ingress
 ```
 
 **Leave the dashboard enabled.** Later days use it for debugging. To turn

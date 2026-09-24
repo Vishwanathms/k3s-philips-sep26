@@ -10,7 +10,7 @@ dashboard API with the expected status. Used in
 
 ```console
 $ kubectl apply -f ex07-nginx-dashboard-demo/nginx-demo.yaml
-namespace/day05-nginx-demo created
+namespace/day03-nginx-demo created
 configmap/nginx-page created
 deployment.apps/nginx created
 service/nginx created
@@ -26,7 +26,7 @@ Hello from nginx pod: nginx-5c89696f44-7xpcg
 $ curl -sI --resolve nginx.k3s.local:80:192.168.230.103 http://nginx.k3s.local/ | grep -i x-served
 X-Served-Via: traefik-dashboard-demo
 
-$ kubectl -n day05-nginx-demo get pods -o wide   (trimmed)
+$ kubectl -n day03-nginx-demo get pods -o wide   (trimmed)
 nginx-5c89696f44-7xpcg   10.42.0.109
 nginx-5c89696f44-nttpk   10.42.0.110
 ```
@@ -35,20 +35,20 @@ nginx-5c89696f44-nttpk   10.42.0.110
 
 ```console
 $ curl -s http://localhost:9000/api/http/routers | grep -o '"name":"[^"]*nginx[^"]*"'
-"name":"day05-nginx-demo-nginx-nginx-k3s-local@kubernetes"
-"name":"websecure-day05-nginx-demo-nginx-nginx-k3s-local@kubernetes"
+"name":"day03-nginx-demo-nginx-nginx-k3s-local@kubernetes"
+"name":"websecure-day03-nginx-demo-nginx-nginx-k3s-local@kubernetes"
 
-# router day05-nginx-demo-nginx-nginx-k3s-local@kubernetes
+# router day03-nginx-demo-nginx-nginx-k3s-local@kubernetes
 "entryPoints":["metrics","web"]
-"middlewares":["day05-nginx-demo-add-demo-header@kubernetescrd"]
-"service":"day05-nginx-demo-nginx-80"
+"middlewares":["day03-nginx-demo-add-demo-header@kubernetescrd"]
+"service":"day03-nginx-demo-nginx-80"
 "status":"enabled"
 
-# middleware day05-nginx-demo-add-demo-header@kubernetescrd
+# middleware day03-nginx-demo-add-demo-header@kubernetescrd
 "status":"enabled"
 "type":"headers"
 
-# service day05-nginx-demo-nginx-80@kubernetes
+# service day03-nginx-demo-nginx-80@kubernetes
 "url":"http://10.42.0.109:80"
 "url":"http://10.42.0.110:80"
 "serverStatus":{"http://10.42.0.109:80":"UP","http://10.42.0.110:80":"UP"}
@@ -57,19 +57,19 @@ $ curl -s http://localhost:9000/api/http/routers | grep -o '"name":"[^"]*nginx[^
 ## "Try these" experiments
 
 ```console
-$ kubectl -n day05-nginx-demo scale deploy/nginx --replicas=3
+$ kubectl -n day03-nginx-demo scale deploy/nginx --replicas=3
 "serverStatus":{"http://10.42.0.109:80":"UP","http://10.42.0.110:80":"UP","http://10.42.0.111:80":"UP"}
 
-$ kubectl -n day05-nginx-demo annotate ingress nginx --overwrite \
-    traefik.ingress.kubernetes.io/router.middlewares=day05-nginx-demo-does-not-exist@kubernetescrd
+$ kubectl -n day03-nginx-demo annotate ingress nginx --overwrite \
+    traefik.ingress.kubernetes.io/router.middlewares=day03-nginx-demo-does-not-exist@kubernetescrd
 $ curl -s -o /dev/null -w 'HTTP %{http_code}\n' --resolve nginx.k3s.local:80:192.168.230.103 http://nginx.k3s.local/
 HTTP 404
 # router:
-"error":["middleware \"day05-nginx-demo-does-not-exist@kubernetescrd\" does not exist"]
+"error":["middleware \"day03-nginx-demo-does-not-exist@kubernetescrd\" does not exist"]
 "status":"disabled"
 
 $ kubectl apply -f ex07-nginx-dashboard-demo/nginx-demo.yaml
-$ kubectl -n day05-nginx-demo get deploy nginx
+$ kubectl -n day03-nginx-demo get deploy nginx
 NAME    READY   UP-TO-DATE   AVAILABLE   AGE
 nginx   2/2     2            2           65s
 $ curl -s -o /dev/null -w 'HTTP %{http_code}\n' --resolve nginx.k3s.local:80:192.168.230.103 http://nginx.k3s.local/
@@ -82,4 +82,4 @@ Note: the router's entrypoints are `metrics` and `web`. An Ingress with no
 this chart, which is also why a separate `websecure-…` router appears.
 
 The demo was **left running** on this cluster. Remove it with
-`kubectl delete namespace day05-nginx-demo`.
+`kubectl delete namespace day03-nginx-demo`.
