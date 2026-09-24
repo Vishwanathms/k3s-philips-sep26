@@ -1,0 +1,54 @@
+# ============================================================================
+# TASK D3 — "The RoleBinding exists, but it does nothing"
+# ============================================================================
+# Reported by a developer on the ingest team:
+#
+#   $ kubectl get rolebinding -n imaging-dev
+#   NAME               ROLE               AGE
+#   ingest-developer   Role/app-operator  3m          <-- it IS there
+#
+#   $ kubectl auth can-i list pods -n imaging-dev \
+#       --as=system:serviceaccount:imaging-dev:ingest-bot
+#   no                                                 <-- but it grants nothing
+#
+# Everything "looks right" at a glance. There are TWO independent defects in
+# this file, either of which alone is enough to make the binding ineffective.
+# Find both, explain in one sentence each why RBAC silently ignores them
+# (note: `kubectl apply` reports no error for either), and fix them.
+#
+# Hint: RBAC never fails loudly for a binding that matches nothing. Compare
+# every field the API server has to match on: the binding's own namespace,
+# the subject's kind/name/namespace, and what roleRef can legally point to.
+# ============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ingest-bot
+  namespace: imaging-dev
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: app-operator
+  namespace: imaging-prod
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ingest-developer
+  namespace: imaging-dev
+subjects:
+  - kind: ServiceAccount
+    name: ingest-bot
+    namespace: imaging-prod
+roleRef:
+  kind: Role
+  name: app-operator
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,55 @@
+# ============================================================================
+# TASK D1 — "The pipeline can patch, but cannot scale"
+# ============================================================================
+# Reported by the CI team:
+#
+#   $ kubectl scale deployment/report-api --replicas=3 -n imaging-dev \
+#       --as=system:serviceaccount:imaging-dev:ci-deployer
+#   Error from server (Forbidden): deployments.apps "report-api" is forbidden:
+#   User "system:serviceaccount:imaging-dev:ci-deployer" cannot patch resource
+#   "deployments/scale" in API group "apps" in the namespace "imaging-dev"
+#
+# ...yet this works fine:
+#
+#   $ kubectl patch deployment/report-api -n imaging-dev --type merge \
+#       -p '{"metadata":{"annotations":{"ci/build":"1042"}}}' \
+#       --as=system:serviceaccount:imaging-dev:ci-deployer
+#   deployment.apps/report-api patched
+#
+# Apply this file as-is, reproduce the failure, diagnose it, then fix it with
+# the SMALLEST possible change. Do not add verbs or resources the pipeline
+# does not need, and do not remove the resourceNames restriction.
+# ============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ci-deployer
+  namespace: imaging-dev
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ci-deployer
+  namespace: imaging-dev
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["report-api"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ci-deployer
+  namespace: imaging-dev
+subjects:
+  - kind: ServiceAccount
+    name: ci-deployer
+    namespace: imaging-dev
+roleRef:
+  kind: Role
+  name: ci-deployer
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,19 @@
+# Turns on the Traefik dashboard that k3s ships but keeps unexposed.
+# k3s installs Traefik from a HelmChart in kube-system; a HelmChartConfig
+# with the SAME name ("traefik") overrides that chart's values, and the
+# k3s helm-controller re-runs the upgrade automatically.
+#
+# ingressRoute.dashboard.enabled creates an IngressRoute that sends
+# /dashboard and /api to Traefik's internal api@internal service, on the
+# private "traefik" entrypoint (container port 8080) only — it is NOT
+# published on the node's ports 80/443.
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ingressRoute:
+      dashboard:
+        enabled: true

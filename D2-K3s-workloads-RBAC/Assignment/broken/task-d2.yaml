@@ -1,0 +1,55 @@
+# ============================================================================
+# TASK D2 — "On-call can see the pods but cannot read why they crashed"
+# ============================================================================
+# Reported by the SRE on-call group:
+#
+#   $ kubectl get pods -n imaging-dev \
+#       --as=system:serviceaccount:imaging-dev:oncall-viewer
+#   NAME                          READY   STATUS             RESTARTS
+#   report-api-7d9f8c6b4d-x2k9v   0/1     CrashLoopBackOff   4
+#
+#   $ kubectl logs report-api-7d9f8c6b4d-x2k9v -n imaging-dev \
+#       --as=system:serviceaccount:imaging-dev:oncall-viewer
+#   Error from server (Forbidden): pods "report-api-7d9f8c6b4d-x2k9v" is
+#   forbidden: User "system:serviceaccount:imaging-dev:oncall-viewer" cannot
+#   get resource "pods/log" in API group "" in the namespace "imaging-dev"
+#
+# On-call must be able to read logs and inspect events to triage an incident.
+# They must NOT gain the ability to exec into a pod, edit anything, or read
+# Secrets. Fix the Role accordingly.
+#
+# Bonus: `kubectl describe pod` also needs one more read permission that is
+# missing here for the "Events:" section to populate. Identify it.
+# ============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: oncall-viewer
+  namespace: imaging-dev
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: oncall-viewer
+  namespace: imaging-dev
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: oncall-viewer
+  namespace: imaging-dev
+subjects:
+  - kind: ServiceAccount
+    name: oncall-viewer
+    namespace: imaging-dev
+roleRef:
+  kind: Role
+  name: oncall-viewer
+  apiGroup: rbac.authorization.k8s.io
