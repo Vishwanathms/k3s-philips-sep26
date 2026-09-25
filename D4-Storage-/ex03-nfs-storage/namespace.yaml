@@ -1,0 +1,7 @@
+# Every D4 storage exercise lives in this one namespace. Applying it is the
+# first step of each exercise, and it is safe to re-apply - the exercises are
+# meant to be runnable independently and in any order.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: d4-storage

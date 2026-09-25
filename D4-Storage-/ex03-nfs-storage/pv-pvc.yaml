@@ -1,0 +1,32 @@
+# ex03 - a PersistentVolume backed by a REAL NFS export (see README.md for
+# how the NFS server was set up on this node) instead of local disk. Static
+# provisioning again (no NFS provisioner involved yet - that's ex04), but
+# this time accessModes includes ReadWriteMany: many Pods, even on
+# different nodes, can mount it at once. hostPath/local-path cannot do that.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 500Mi
+  accessModes: ["ReadWriteMany"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-manual
+  nfs:
+    # Placeholders - this file is rendered with envsubst, NOT applied
+    # directly. See README.md: source ../env.sh first.
+    server: ${NFS_SERVER}
+    path: ${NFS_EXPORT_DIR}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-claim
+  namespace: d4-storage
+spec:
+  accessModes: ["ReadWriteMany"]
+  storageClassName: nfs-manual
+  resources:
+    requests:
+      storage: 200Mi

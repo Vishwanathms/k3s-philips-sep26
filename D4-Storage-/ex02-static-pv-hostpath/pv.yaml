@@ -1,0 +1,23 @@
+# ex02 - STATIC provisioning: an admin (us) creates the PersistentVolume by
+# hand, ahead of any claim, instead of a provisioner creating it on demand.
+#
+#   storageClassName: manual   - matches this PV to PVCs that ask for the
+#                                same (provisioner-less) class, and stops
+#                                the default StorageClass from grabbing it.
+#   persistentVolumeReclaimPolicy: Retain - contrast with ex01's local-path
+#                                (Delete): when the claim is released, the
+#                                PV and its data are kept, not destroyed.
+#   hostPath - single-node only; a real cluster would use network storage
+#              here (this is exactly what ex03/ex04 do with NFS instead).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: manual-pv
+spec:
+  capacity:
+    storage: 200Mi
+  accessModes: ["ReadWriteOnce"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/d4-manual-pv

@@ -1,0 +1,32 @@
+# ex02 - a PVC that matches manual-pv on storageClassName (both "manual").
+# There is no provisioner named "manual", so this ONLY works by binding to
+# an existing PV - proving static and dynamic provisioning are different
+# code paths, not just different YAML.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: manual-claim
+  namespace: d4-storage
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: manual
+  resources:
+    requests:
+      storage: 100Mi     # <= the PV's 200Mi; static binding just needs "fits"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: manual-writer
+  namespace: d4-storage
+spec:
+  containers:
+    - name: writer
+      image: busybox:1.36
+      command: ["sh", "-c", "echo written-by-manual-writer > /data/marker.txt && sleep 3600"]
+      volumeMounts:
+        - { name: data, mountPath: /data }
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: manual-claim

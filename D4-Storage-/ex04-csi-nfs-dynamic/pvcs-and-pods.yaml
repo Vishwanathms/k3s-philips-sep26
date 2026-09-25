@@ -1,0 +1,54 @@
+# ex04 - two SEPARATE PVCs against the CSI StorageClass. Each gets its own
+# dynamically-created PV and its own subdirectory under the NFS export -
+# contrast with ex03, where every consumer shared the ONE PV an admin made.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: csi-claim-a
+  namespace: d4-storage
+spec:
+  accessModes: ["ReadWriteMany"]
+  storageClassName: nfs-csi
+  resources:
+    requests: { storage: 100Mi }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: csi-claim-b
+  namespace: d4-storage
+spec:
+  accessModes: ["ReadWriteMany"]
+  storageClassName: nfs-csi
+  resources:
+    requests: { storage: 100Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: csi-writer-a
+  namespace: d4-storage
+spec:
+  containers:
+    - name: writer
+      image: busybox:1.36
+      command: ["sh", "-c", "echo from-claim-a > /data/marker.txt && sleep 3600"]
+      volumeMounts: [{ name: data, mountPath: /data }]
+  volumes:
+    - name: data
+      persistentVolumeClaim: { claimName: csi-claim-a }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: csi-writer-b
+  namespace: d4-storage
+spec:
+  containers:
+    - name: writer
+      image: busybox:1.36
+      command: ["sh", "-c", "echo from-claim-b > /data/marker.txt && sleep 3600"]
+      volumeMounts: [{ name: data, mountPath: /data }]
+  volumes:
+    - name: data
+      persistentVolumeClaim: { claimName: csi-claim-b }

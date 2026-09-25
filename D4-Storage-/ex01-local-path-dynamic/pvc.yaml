@@ -1,0 +1,15 @@
+# ex01 - a PVC with NO storageClassName set. It falls through to the
+# cluster's default StorageClass: "local-path" (k3s's bundled
+# rancher.io/local-path provisioner). volumeBindingMode is
+# WaitForFirstConsumer, so this PVC stays Pending - on purpose - until a
+# Pod that uses it is scheduled (see pod.yaml).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-claim
+  namespace: d4-storage
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 100Mi

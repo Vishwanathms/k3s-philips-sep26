@@ -1,0 +1,19 @@
+# ex04 - DYNAMIC provisioning against the SAME NFS server/export ex03 used
+# statically - but now every PVC that asks for this class gets its own
+# fresh subdirectory (and PV object) created automatically by the CSI
+# driver. reclaimPolicy: Delete, unlike ex03's hand-made Retain PV: deleting
+# the PVC deletes the PV *and* asks the driver to remove the subdirectory.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-csi
+provisioner: nfs.csi.k8s.io
+parameters:
+  # Placeholders - this file is rendered with envsubst, NOT applied
+  # directly. See README.md: source ../env.sh first.
+  server: ${NFS_SERVER}
+  share: ${NFS_EXPORT_DIR}
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+mountOptions:
+  - nfsvers=4.1
