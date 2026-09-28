@@ -1,0 +1,17 @@
+# The whole capstone app must fit in this budget.
+# Stage 07 uses: requests 250m CPU / 320Mi, limits 1500m CPU / 768Mi, 5 Pods, 1 PVC.
+# Headroom is deliberately small on limits.cpu: scaling `api` to 4
+# replicas needs 2500m of limits, so the 4th Pod is refused (drill in the manual).
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: capstone-quota
+  namespace: capstone
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    persistentvolumeclaims: "2"

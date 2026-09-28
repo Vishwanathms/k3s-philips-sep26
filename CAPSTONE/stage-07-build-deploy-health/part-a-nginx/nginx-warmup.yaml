@@ -1,0 +1,50 @@
+# Part A warm-up: probes and resources on plain nginx, before the capstone.
+#   readiness -> GET /index.html   (delete the file => Pod leaves the Service, NOT restarted)
+#   liveness  -> GET /healthz.html (delete the file => container is RESTARTED,
+#                                   and the restart brings the file back)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: capstone-warmup
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: capstone-warmup
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: nginx }
+  template:
+    metadata:
+      labels: { app: nginx }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          # create the liveness file at start, then run nginx as normal
+          command: ["sh", "-c", "echo ok > /usr/share/nginx/html/healthz.html && exec nginx -g 'daemon off;'"]
+          ports:
+            - containerPort: 80
+          resources:
+            requests: { cpu: 25m,  memory: 32Mi }
+            limits:   { cpu: 100m, memory: 64Mi }
+          readinessProbe:
+            httpGet: { path: /index.html, port: 80 }
+            periodSeconds: 3
+            failureThreshold: 1
+          livenessProbe:
+            httpGet: { path: /healthz.html, port: 80 }
+            periodSeconds: 5
+            failureThreshold: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: capstone-warmup
+spec:
+  selector: { app: nginx }
+  ports:
+    - port: 80

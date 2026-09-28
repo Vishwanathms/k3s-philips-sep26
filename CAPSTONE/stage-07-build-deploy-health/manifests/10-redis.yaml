@@ -1,0 +1,67 @@
+# DATA tier: redis with its data on a PersistentVolume (Day 06), so the
+# hit counter survives Pod restarts. appendonly = every write is logged
+# to /data/appendonly.* before it's acknowledged.
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: data }
+spec:
+  clusterIP: None            # headless: the StatefulSet's stable network identity
+  selector: { app: redis }
+  ports:
+    - name: redis
+      port: 6379
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: data }
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels: { app: redis }
+  template:
+    metadata:
+      labels: { app: redis, tier: data, app.kubernetes.io/part-of: capstone }
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          args: ["redis-server", "--appendonly", "yes"]
+          ports:
+            - name: redis
+              containerPort: 6379
+          # requests == limits for every resource => QoS class Guaranteed.
+          # The data tier is the LAST thing the kubelet should evict.
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits:   { cpu: 100m, memory: 128Mi }
+          # Ready = redis actually answers a command, not just "port open".
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 5
+            timeoutSeconds: 2
+          # Alive = the process still accepts TCP connections.
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 1Gi

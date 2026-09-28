@@ -1,0 +1,22 @@
+# `kubectl apply -k .` applies everything in this folder, in order.
+#
+# The ONE place that says where the app images come from. Default: the
+# local registry on this VM (localhost:5000, see LAB-MANUAL step B4).
+# Using Docker Hub or Harbor instead? Change only the two newName lines.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - 00-namespace.yaml
+  - 01-limitrange.yaml
+  - 02-resourcequota.yaml
+  - 10-redis.yaml
+  - 20-api.yaml
+  - 30-web.yaml
+  - 40-ingress.yaml
+images:
+  - name: capstone-api
+    newName: localhost:5000/capstone-api
+    newTag: 1.0.0
+  - name: capstone-web
+    newName: localhost:5000/capstone-web
+    newTag: 1.0.0

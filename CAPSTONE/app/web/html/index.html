@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>k3s Capstone</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --fg:#1d2330; --muted:#5b6475; --accent:#2563eb; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12151b; --card:#1b1f27; --fg:#e7eaf0; --muted:#9aa3b2; --accent:#60a5fa; --bad:#f87171; }
+  }
+  body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+  main { max-width:640px; margin:0 auto; padding:32px 16px; }
+  h1 { font-size:1.4rem; margin:0 0 4px; }
+  p.sub { color:var(--muted); margin:0 0 24px; }
+  .count { font-size:3.5rem; font-weight:700; color:var(--accent); margin:8px 0; }
+  .card { background:var(--card); border-radius:12px; padding:20px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .flow { display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:.9rem; }
+  .tier { border:1px solid var(--muted); border-radius:8px; padding:8px 10px; }
+  .tier b { display:block; font-size:.75rem; color:var(--muted); text-transform:uppercase; }
+  .err { color:var(--bad); }
+  button { font:inherit; padding:8px 16px; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer; }
+</style>
+</head>
+<body>
+<main>
+  <h1>k3s Capstone</h1>
+  <p class="sub">nginx &rarr; python &rarr; redis, served through Traefik</p>
+
+  <div class="card">
+    <div>This page has been seen</div>
+    <div class="count" id="hits">&hellip;</div>
+    <div>times <span id="err" class="err"></span></div>
+  </div>
+
+  <div class="card">
+    <div class="flow">
+      <div class="tier"><b>web pod</b><span id="web">&hellip;</span></div> &rarr;
+      <div class="tier"><b>api pod</b><span id="api">&hellip;</span></div> &rarr;
+      <div class="tier"><b>data</b>redis</div>
+    </div>
+  </div>
+
+  <button id="again">Refresh</button>
+</main>
+<script>
+async function load() {
+  document.getElementById('err').textContent = '';
+  try {
+    const w = await fetch('/web-info', {cache: 'no-store'}).then(r => r.json());
+    document.getElementById('web').textContent = w.pod;
+  } catch (e) { document.getElementById('web').textContent = '?'; }
+  try {
+    const r = await fetch('/api/hits', {cache: 'no-store'});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+    document.getElementById('hits').textContent = d.hits;
+    document.getElementById('api').textContent = d.pod + ' (v' + d.version + ')';
+  } catch (e) {
+    document.getElementById('err').textContent = '(API error: ' + e.message + ')';
+  }
+}
+document.getElementById('again').onclick = load;
+load();
+</script>
+</body>
+</html>

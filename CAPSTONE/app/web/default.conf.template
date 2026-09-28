@@ -1,0 +1,35 @@
+# Capstone web tier. ${API_UPSTREAM} is filled in at container start by
+# the nginx image's envsubst step (see /docker-entrypoint.d/).
+server {
+    listen 8080;
+
+    # Which web Pod answered: shown on the page next to the API Pod.
+    add_header X-Web-Pod $hostname always;
+
+    # Static front page
+    location / {
+        root  /usr/share/nginx/html;
+        index index.html;
+    }
+
+    # Liveness/readiness for THIS tier only: never depends on the API.
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location = /web-info {
+        default_type application/json;
+        return 200 '{"pod":"$hostname","version":"${WEB_VERSION}"}\n';
+    }
+
+    # Everything under /api/ goes to the python tier, path unchanged.
+    location /api/ {
+        proxy_pass http://${API_UPSTREAM};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 5s;
+    }
+}
