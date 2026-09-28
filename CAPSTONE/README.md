@@ -79,3 +79,9 @@ Each student runs a **local registry** on their own VM (`registry:2` on
 configuration. The registry is set in one place per stage:
 `manifests/kustomization.yaml` → `images:` → `newName`. Day 13 moves the
 images to Harbor by changing only those lines.
+
+**Prefer a real registry?** [LAB-MANUAL-Docker-Hub.md](LAB-MANUAL-Docker-Hub.md)
+walks through creating a Docker Hub ID and access token, logging in, building
+both apps, pushing them, and repointing those same `newName:` lines at your own
+namespace — including the `imagePullSecret` a private repository needs. It
+replaces stage 07's step B4 and works with any stage.
