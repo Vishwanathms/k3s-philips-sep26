@@ -1,0 +1,12 @@
+# Every D2 exercise runs in this one namespace, so the whole day tears down
+# with `kubectl delete namespace d2-workloads-rbac`. Safe to re-apply.
+#
+# The RBAC labs (ex06, ex07) also reference namespaces like payments-prod and
+# catalog-staging INSIDE their Role/RoleBinding examples - those are
+# illustrative scenario names, not namespaces the labs create.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: d2-workloads-rbac
+  labels:
+    training: workloads-rbac

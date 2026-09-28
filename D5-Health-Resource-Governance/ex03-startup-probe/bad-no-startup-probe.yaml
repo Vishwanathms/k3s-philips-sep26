@@ -1,0 +1,27 @@
+# ex03 (bad) - a slow starter (takes 20s to become healthy) with ONLY a
+# liveness probe, no startupProbe. periodSeconds=5, failureThreshold=1
+# means the very first probe attempt (at t=5s) already fails, because the
+# health marker doesn't exist until t=20s. kubelet kills and restarts the
+# container - which resets the 20s countdown - forever. This Pod can never
+# start; that's the point of the drill.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: slow-starter-bad
+  namespace: d5-health
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
+      args:
+        - /bin/sh
+        - -c
+        - sleep 20; touch /tmp/healthy; sleep 600
+      livenessProbe:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        periodSeconds: 5
+        failureThreshold: 1
+      resources:
+        requests: { cpu: 10m, memory: 16Mi }
+        limits: { cpu: 100m, memory: 32Mi }

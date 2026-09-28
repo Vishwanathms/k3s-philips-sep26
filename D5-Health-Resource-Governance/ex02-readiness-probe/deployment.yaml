@@ -1,0 +1,41 @@
+# ex02 - two replicas, each gated by a readiness probe that checks for
+# /tmp/ready (created at container start). Unlike ex01's liveness probe,
+# failing this does NOT restart the container - it only pulls the Pod out
+# of the Service's endpoints. We flip one replica's readiness on demand by
+# exec-ing in and removing the marker file - the app keeps running the
+# whole time.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: d5-health
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: web }
+  template:
+    metadata:
+      labels: { app: web }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          command: ["sh", "-c", "touch /tmp/ready && nginx -g 'daemon off;'"]
+          ports: [{ containerPort: 80 }]
+          readinessProbe:
+            exec:
+              command: ["cat", "/tmp/ready"]
+            periodSeconds: 3
+            failureThreshold: 1
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: d5-health
+spec:
+  selector: { app: web }
+  ports: [{ port: 80, targetPort: 80 }]

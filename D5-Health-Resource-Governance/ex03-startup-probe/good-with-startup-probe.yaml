@@ -1,0 +1,31 @@
+# ex03 (good) - the SAME slow starter (20s to become healthy), same
+# liveness probe. The difference is startupProbe: while it's running,
+# liveness/readiness probes are disabled entirely. It uses the same check
+# but a budget of periodSeconds(5) * failureThreshold(6) = 30s - enough to
+# survive the 20s startup - before liveness ever gets a turn to check.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: slow-starter-good
+  namespace: d5-health
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
+      args:
+        - /bin/sh
+        - -c
+        - sleep 20; touch /tmp/healthy; sleep 600
+      startupProbe:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        periodSeconds: 5
+        failureThreshold: 6      # 30s budget to start
+      livenessProbe:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        periodSeconds: 5
+        failureThreshold: 1
+      resources:
+        requests: { cpu: 10m, memory: 16Mi }
+        limits: { cpu: 100m, memory: 32Mi }

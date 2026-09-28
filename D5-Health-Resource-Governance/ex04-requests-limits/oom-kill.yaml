@@ -1,0 +1,21 @@
+# ex04c - memory limits are enforced by KILLING, not throttling - there is
+# no such thing as "slow down your memory allocation". This container
+# starts cleanly (sleep 3, cheap), then tries to fill /dev/shm (tmpfs -
+# real, unswappable memory; swap is off on this node anyway) past its
+# 20Mi limit. The kernel OOM-killer kills it; kubelet reports OOMKilled.
+# restartPolicy: Never so the Pod stops right after the kill instead of
+# looping, so the evidence is easy to capture.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom-kill-demo
+  namespace: d5-health
+spec:
+  restartPolicy: Never
+  containers:
+    - name: eater
+      image: busybox:1.36
+      command: ["sh", "-c", "echo starting; sleep 3; dd if=/dev/zero of=/dev/shm/fill bs=1M count=200"]
+      resources:
+        requests: { cpu: 10m, memory: 10Mi }
+        limits: { cpu: 100m, memory: 20Mi }

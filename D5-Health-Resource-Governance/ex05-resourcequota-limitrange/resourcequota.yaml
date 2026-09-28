@@ -1,0 +1,16 @@
+# ex05a - a hard ceiling on the WHOLE namespace: at most 3 Pods, and no more
+# than 500m CPU / 256Mi memory requested in total, 1 CPU / 512Mi limited in
+# total. Enforced by the API server at admission time - a Pod that would
+# cross any of these is REJECTED, not created-then-pending.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: team-quota
+  namespace: d5-health
+spec:
+  hard:
+    pods: "3"
+    requests.cpu: "500m"
+    requests.memory: 256Mi
+    limits.cpu: "1"
+    limits.memory: 512Mi

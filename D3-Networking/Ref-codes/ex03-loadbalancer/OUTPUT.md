@@ -1,11 +1,11 @@
 # ex03 — verified run
 
-Captured **2026-09-10** on k3s `v1.36.4+k3s1`, namespace `day02-networking`.
+Captured **2026-09-10** on k3s `v1.36.4+k3s1`, namespace `d3-networking`.
 Result: **PASS** — k3s's ServiceLB assigned an `EXTERNAL-IP` and the Service
 was reachable on its port.
 
 ```console
-$ kubectl get svc -n day02-networking
+$ kubectl get svc -n d3-networking
 NAME               TYPE           CLUSTER-IP      EXTERNAL-IP       PORT(S)
 web-loadbalancer   LoadBalancer   10.43.143.221   192.168.230.103   8088:32091/TCP
 ```

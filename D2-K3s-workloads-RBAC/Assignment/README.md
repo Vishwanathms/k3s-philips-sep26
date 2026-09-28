@@ -1,6 +1,6 @@
-# Day 02 — Assignment
+# D2 — Assignment
 
-Assignment covering Day 01 and Day 02 material only: Kubernetes workloads, configuration (ConfigMap/Secret), and RBAC on k3s.
+Assignment covering D1 and D2 material only: Kubernetes workloads, configuration (ConfigMap/Secret), and RBAC on k3s.
 
 | File | Purpose |
 |---|---|

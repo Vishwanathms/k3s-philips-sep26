@@ -2,6 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: d2-workloads-rbac
   name: redis
   labels:
     app: redis
@@ -31,6 +32,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: d2-workloads-rbac
   name: redis-primary
   labels:
     app: redis

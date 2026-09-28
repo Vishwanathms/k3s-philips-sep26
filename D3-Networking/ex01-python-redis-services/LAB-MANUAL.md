@@ -1,6 +1,6 @@
 # Lab manual — ex07: Python + Redis combined scenario
 
-Builds on [Day-01 ex02](../../Day-01-Deployments-Config-Secrets/ex02-python-redis/):
+Builds on [D1 ex02](../../D1-Docker-kube-k3s-Intro/ex02-python-redis/):
 the same Flask + Redis app, now exposed and secured with three Service/networking
 concepts together. Read [README.md](README.md) first for the architecture diagram
 and file list.
@@ -20,8 +20,8 @@ By the end of this lab, students can:
 ```bash
 kubectl get nodes
 kubectl apply -f ../00-namespace.yaml
-export NS=d03-networking
-cd Day-03-Services-Networking/ex07-python-redis-services
+export NS=d3-networking
+cd D3-Networking/ex01-python-redis-services
 ```
 
 ✅ **Checkpoint 0 — namespace ready**
@@ -96,7 +96,7 @@ kubectl get service python-app-alias -n "$NS"
 ```bash
 kubectl run tmp-dns --rm -it --restart=Never -n "$NS" --image=busybox:1.36 \
   -- sh -c 'nslookup python-app-alias && wget -T 3 -qO- http://python-app-alias:8000/'
-# nslookup shows a CNAME to python-app.d03-networking.svc.cluster.local
+# nslookup shows a CNAME to python-app.d3-networking.svc.cluster.local
 # wget returns the same "Hello World! I have been seen N times." response
 ```
 

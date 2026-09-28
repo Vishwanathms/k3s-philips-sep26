@@ -22,6 +22,18 @@ It defaults `REDIS_HOST` to `redis`, which is exactly the name of the Redis
 `Service` — so this example needs **no** configuration. ex03 shows how to
 override it.
 
+## Namespace
+
+All manifests here are pinned to `d1-intro`. Create it and make it your default,
+so every `kubectl` below needs no `-n`:
+
+```bash
+kubectl apply -f ../00-namespace.yaml
+kubectl config set-context --current --namespace=d1-intro
+```
+
+Put it back when you're done: `kubectl config set-context --current --namespace=default`
+
 ## Apply
 
 ```bash

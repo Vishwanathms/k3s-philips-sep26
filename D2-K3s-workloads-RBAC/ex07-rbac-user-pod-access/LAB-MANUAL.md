@@ -47,12 +47,12 @@ because you're applying them as the cluster admin.
 
 ```bash
 cd ex07-rbac-user-pod-access
-kubectl apply -f 00-namespace.yaml
+kubectl apply -f ../00-namespace.yaml
 kubectl apply -f 01-demo-pods.yaml
 kubectl apply -f 02-demo-secret.yaml
 kubectl apply -f 03-role.yaml
 kubectl apply -f 04-rolebinding.yaml
-kubectl rollout status deployment/demo-app -n rbac-user-pod-demo --timeout=120s
+kubectl rollout status deployment/demo-app -n d2-workloads-rbac --timeout=120s
 ```
 
 `03-role.yaml` defines `pod-reader`:
@@ -155,7 +155,7 @@ Expect `Username: alice`, `Groups: [developers system:authenticated]`.
 
 ```bash
 KCFG=alice-identity/alice.kubeconfig
-NS=rbac-user-pod-demo
+NS=d2-workloads-rbac
 
 kubectl --kubeconfig="$KCFG" get pods -n "$NS"
 POD=$(kubectl get pods -n "$NS" -o jsonpath='{.items[0].metadata.name}')
@@ -170,7 +170,7 @@ kubectl --kubeconfig="$KCFG" get secret demo-secret -n "$NS"        # Forbidden 
 kubectl --kubeconfig="$KCFG" get deployment demo-app -n "$NS"       # Forbidden — not in the Role
 kubectl --kubeconfig="$KCFG" delete pod "$POD" -n "$NS"             # Forbidden — no delete verb
 kubectl --kubeconfig="$KCFG" exec -n "$NS" "$POD" -- ls /           # Forbidden — no pods/exec
-kubectl --kubeconfig="$KCFG" get pods -n default                    # Forbidden — Role is namespaced to rbac-user-pod-demo
+kubectl --kubeconfig="$KCFG" get pods -n default                    # Forbidden — Role is namespaced to d2-workloads-rbac
 kubectl --kubeconfig="$KCFG" get pods -A                            # Forbidden — no ClusterRole
 ```
 
@@ -182,7 +182,7 @@ namespace — that's the RBAC decision trail you'd read from
 
 ```bash
 ./scripts/cleanup-user-alice.sh        # deletes CSR/alice-csr and alice-identity/
-kubectl delete namespace rbac-user-pod-demo
+kubectl delete namespace d2-workloads-rbac
 ```
 
 ---

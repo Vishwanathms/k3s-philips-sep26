@@ -1,4 +1,4 @@
-# ex06 — verified run
+# ex02 — verified run
 
 Captured **2026-09-24** on k3s `v1.36.4+k3s1`, single node `lab-g2-vm2`,
 Traefik `v3.7.8` (chart `traefik-40.1.4+up40.1.0`). Result: **PASS**. The
@@ -69,20 +69,20 @@ $ curl -s http://localhost:9000/api/version
 
 $ curl -s http://localhost:9000/api/http/routers | grep -o '"name":"[^"]*"'
 "name":"argocd-argocd-server-argocd-k3s-local@kubernetes"
-"name":"day03-ingress-hosts-api-k3s-local@kubernetes"
-"name":"day03-ingress-hosts-web-k3s-local@kubernetes"
+"name":"d3-networking-hosts-api-k3s-local@kubernetes"
+"name":"d3-networking-hosts-web-k3s-local@kubernetes"
 "name":"kube-system-traefik-dashboard-d012b7f875133eeab4e5@kubernetescrd"
 "name":"ping@internal"
 "name":"prometheus@internal"
-"name":"websecure-day03-ingress-hosts-api-k3s-local@kubernetes"
-"name":"websecure-day03-ingress-hosts-web-k3s-local@kubernetes"
+"name":"websecure-d3-networking-hosts-api-k3s-local@kubernetes"
+"name":"websecure-d3-networking-hosts-web-k3s-local@kubernetes"
 
-$ curl -s http://localhost:9000/api/http/services/day03-ingress-web-80@kubernetes | grep -o '"url":"[^"]*"'
+$ curl -s http://localhost:9000/api/http/services/d3-networking-web-80@kubernetes | grep -o '"url":"[^"]*"'
 "url":"http://10.42.0.105:80"
 "url":"http://10.42.0.107:80"
 "url":"http://10.42.0.108:80"
 
-$ kubectl get endpointslices -n day03-ingress -l kubernetes.io/service-name=web -o jsonpath='{.items[0].endpoints[*].addresses}'
+$ kubectl get endpointslices -n d3-networking -l kubernetes.io/service-name=web -o jsonpath='{.items[0].endpoints[*].addresses}'
 ["10.42.0.105"] ["10.42.0.107"] ["10.42.0.108"]
 
 $ curl -s http://localhost:9000/api/overview

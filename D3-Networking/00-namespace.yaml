@@ -1,7 +1,8 @@
-# ex07 · step 1 — isolate the exercise
+# Every D3 networking exercise runs in this one namespace, so the whole day
+# tears down with `kubectl delete namespace d3-networking`. Safe to re-apply.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: d03-networking
+  name: d3-networking
   labels:
-    purpose: d03-networking
+    training: networking

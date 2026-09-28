@@ -1,8 +1,7 @@
 # Installing K3s on Ubuntu 24.04 LTS
 
 Step-by-step for a **single-node** cluster (control plane + workloads on one
-machine), with notes for adding agents and HA. See [PREREQUISITES.md](PREREQUISITES.md)
-for the full requirements list.
+machine), with notes for adding agents and HA.
 
 Tested target: Ubuntu 24.04.4 LTS (Noble), x86_64, cgroup v2.
 

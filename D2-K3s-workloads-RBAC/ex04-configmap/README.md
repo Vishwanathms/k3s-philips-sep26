@@ -5,6 +5,18 @@ spec. Config now changes without touching the Deployment YAML.
 
 > ✅ **Verified on the live cluster — captured output in [OUTPUT.md](OUTPUT.md).**
 
+## Namespace
+
+All manifests here are pinned to `d2-workloads-rbac`. Create it and make it your default,
+so every `kubectl` below needs no `-n`:
+
+```bash
+kubectl apply -f ../00-namespace.yaml
+kubectl config set-context --current --namespace=d2-workloads-rbac
+```
+
+Put it back when you're done: `kubectl config set-context --current --namespace=default`
+
 ## Apply
 
 ```bash

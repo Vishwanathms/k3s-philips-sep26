@@ -1,0 +1,27 @@
+# ex01 - the classic liveness demo: the container is genuinely healthy for
+# the first 30s (the file /tmp/healthy exists), then removes its own health
+# marker and stays "running" but broken for the rest of its life. The
+# liveness probe (an exec check for that file) is the ONLY thing that
+# notices - and kubelet restarts the container because of it.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-demo
+  namespace: d5-health
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
+      args:
+        - /bin/sh
+        - -c
+        - touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600
+      livenessProbe:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        failureThreshold: 1
+      resources:
+        requests: { cpu: 10m, memory: 16Mi }
+        limits: { cpu: 100m, memory: 32Mi }

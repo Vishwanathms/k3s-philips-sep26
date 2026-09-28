@@ -1,4 +1,4 @@
-# Day 02 Assignment — Workloads, Configuration & RBAC on k3s
+# D2 Assignment — Workloads, Configuration & RBAC on k3s
 
 **Level:** Intermediate → Advanced
 **Suggested effort:** 4–6 hours
@@ -8,7 +8,7 @@
 
 ## Scope
 
-Everything in this assignment is built from Day 01 and Day 02 material only:
+Everything in this assignment is built from D1 and D2 material only:
 
 | Source | What it gives you |
 |---|---|
@@ -43,10 +43,10 @@ Build the workloads this platform runs on, configure them without baking values 
 
 ## What you produce
 
-A single directory (or git repo) named `day02-assignment-<yourname>/`, laid out like the course exercises:
+A single directory (or git repo) named `d2-assignment-<yourname>/`, laid out like the course exercises:
 
 ```
-day02-assignment-<yourname>/
+d2-assignment-<yourname>/
 ├── README.md              # your written answers (the "Explain" prompts + Part E)
 ├── OUTPUT.md              # captured commands + real output, in the style of the ex0*/OUTPUT.md files
 ├── partA-workloads/

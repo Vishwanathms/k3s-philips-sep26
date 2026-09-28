@@ -1,4 +1,4 @@
-# Lab manual — Lab 6: The Traefik dashboard
+# ex02 lab manual — The Traefik dashboard
 
 ## Learning objectives
 
@@ -47,7 +47,7 @@ kubectl -n kube-system get deploy traefik \
 # "--api.dashboard=true"
 ```
 
-Run everything from the `Day-05-Ingress-Traffic-Management/` folder. You
+Run everything from the `D3-Networking/ex02-traefik-dashboard/` folder. You
 need cluster-admin rights, because the change is made in `kube-system`.
 
 ---
@@ -182,7 +182,7 @@ Every `Ingress` and `IngressRoute` in the cluster becomes a Traefik
 **router**. Deploy Lab 1's Ingress (skip this if it's still running):
 
 ```bash
-kubectl apply -f 00-namespace.yaml
+kubectl apply -f ../00-namespace.yaml
 kubectl apply -f ex01-basic-ingress/01-backends.yaml
 kubectl apply -f ex01-basic-ingress/02-ingress.yaml
 ```
@@ -191,9 +191,9 @@ In the dashboard, open **HTTP → HTTP Routers** and find these:
 
 | Router name (as shown) | Comes from | What to notice |
 |---|---|---|
-| `day03-ingress-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | provider `kubernetes` = a standard Ingress; rule `Host(\`web.k3s.local\`)` |
-| `day03-ingress-hosts-api-k3s-local@kubernetes` | Lab 1 `Ingress` | one router per `host` rule |
-| `websecure-day03-ingress-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | an Ingress with no entrypoint annotation gets a router on **both** `web` and `websecure` |
+| `d3-networking-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | provider `kubernetes` = a standard Ingress; rule `Host(\`web.k3s.local\`)` |
+| `d3-networking-hosts-api-k3s-local@kubernetes` | Lab 1 `Ingress` | one router per `host` rule |
+| `websecure-d3-networking-hosts-web-k3s-local@kubernetes` | Lab 1 `Ingress` | an Ingress with no entrypoint annotation gets a router on **both** `web` and `websecure` |
 | `kube-system-traefik-dashboard-…@kubernetescrd` | Step 2 | provider `kubernetescrd` = an `IngressRoute` CRD; entrypoint `traefik` |
 | `ping@internal`, `prometheus@internal` | Traefik itself | built-in routers |
 
@@ -202,7 +202,7 @@ Click the **web** router. The detail page shows the full path of a request:
 Compare the server IPs with:
 
 ```bash
-kubectl get endpointslices -n day03-ingress -l kubernetes.io/service-name=web \
+kubectl get endpointslices -n d3-networking -l kubernetes.io/service-name=web \
   -o jsonpath='{.items[0].endpoints[*].addresses}{"\n"}'
 ```
 
@@ -213,7 +213,7 @@ Service's ClusterIP.
 reload needed:
 
 ```bash
-kubectl scale deployment/web -n day03-ingress --replicas=3
+kubectl scale deployment/web -n d3-networking --replicas=3
 ```
 
 Refresh the router's service page and you should see three servers.
@@ -234,7 +234,7 @@ curl -s http://localhost:9000/api/version; echo
 # {"Version":"3.7.8","Codename":"langres",...}
 
 curl -s http://localhost:9000/api/http/routers | grep -o '"name":"[^"]*"'
-# "name":"day03-ingress-hosts-api-k3s-local@kubernetes"
+# "name":"d3-networking-hosts-api-k3s-local@kubernetes"
 # "name":"kube-system-traefik-dashboard-...@kubernetescrd"
 # ...
 
@@ -269,7 +269,7 @@ Useful endpoints: `/api/http/routers`, `/api/http/services`,
 Lab 1 resources (if you deployed them only for this lab):
 
 ```bash
-kubectl delete namespace day03-ingress
+kubectl delete namespace d3-networking
 ```
 
 **Leave the dashboard enabled.** Later days use it for debugging. To turn

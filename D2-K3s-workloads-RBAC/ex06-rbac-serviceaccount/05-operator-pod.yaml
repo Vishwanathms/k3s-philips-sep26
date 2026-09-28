@@ -9,7 +9,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: operator-box
-  namespace: rbac-nginx-demo
+  namespace: d2-workloads-rbac
 spec:
   serviceAccountName: nginx-operator
   containers:

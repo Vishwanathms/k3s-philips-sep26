@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: demo-app
-  namespace: rbac-user-pod-demo
+  namespace: d2-workloads-rbac
   labels:
     app: demo-app
 spec:

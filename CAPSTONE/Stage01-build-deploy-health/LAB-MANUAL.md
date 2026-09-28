@@ -1,6 +1,6 @@
-# Capstone stage 07 — Build, deploy and keep it healthy
+# Capstone stage 01 — Build, deploy and keep it healthy
 
-**Day 07: Health Management & Resource Governance** · ~2 hours
+**D5: Health Management & Resource Governance** · ~2 hours
 
 ## Scenario
 
@@ -46,7 +46,7 @@ export NODE_IP=$(hostname -I | awk '{print $1}')
 ```
 
 Optional but recommended: the Traefik dashboard from
-[Day 05 Lab 6](../../Day-05-Ingress-Traffic-Management/ex06-traefik-dashboard/LAB-MANUAL.md),
+[D3 ex02 — Traefik dashboard](../../D3-Networking/ex02-traefik-dashboard/LAB-MANUAL.md),
 so you can watch Pods join and leave the load balancer.
 
 ---
@@ -63,7 +63,7 @@ runs 2 nginx replicas with two probes:
 | liveness | `GET /healthz.html` | the file is deleted | **kills and restarts** the container |
 
 ```bash
-kubectl apply -f CAPSTONE/stage-07-build-deploy-health/part-a-nginx/nginx-warmup.yaml
+kubectl apply -f CAPSTONE/Stage01-build-deploy-health/part-a-nginx/nginx-warmup.yaml
 kubectl -n capstone-warmup rollout status deploy/nginx
 kubectl -n capstone-warmup get pods
 ```
@@ -280,12 +280,12 @@ Expected: the pull succeeds, and the registry log shows a request from
 
 ## B5 — Check where the manifests pull from (2 min)
 
-All manifests are in [manifests/](manifests/). The Deployments only say
+All manifests are in [../Stage02-Build-Deploy/manifests/](../Stage02-Build-Deploy/manifests/). The Deployments only say
 `image: capstone-api` / `capstone-web`. The registry and tag are set in
 **one place**, `kustomization.yaml`, and already point at the local registry:
 
 ```bash
-cd CAPSTONE/stage-07-build-deploy-health/manifests
+cd CAPSTONE/Stage02-Build-Deploy/manifests
 grep -A2 'name: capstone' kustomization.yaml
 kubectl kustomize . | grep 'image:'
 ```
@@ -510,5 +510,5 @@ was persisted to `/data` by redis's append-only file, so nothing was lost.
 state and will back it up and restore it. If you need to catch up later:
 
 ```bash
-kubectl apply -k CAPSTONE/stage-07-build-deploy-health/manifests/
+kubectl apply -k CAPSTONE/Stage02-Build-Deploy/manifests/
 ```

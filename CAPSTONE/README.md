@@ -37,15 +37,15 @@ Every day has two parts:
 |---|---|
 | [app/api/](app/api/) | Python API source (`app.py`), `requirements.txt`, `Dockerfile` |
 | [app/web/](app/web/) | nginx config template, static page, `Dockerfile` |
-| `stage-NN-*/manifests/` | the **complete** app as it stands at the end of day NN (`kubectl apply -k`) |
-| `stage-NN-*/LAB-MANUAL.md` | that day's Part A + Part B steps, with checkpoints |
-| `stage-NN-*/OUTPUT.md` | a verified run on the reference cluster |
+| `StageNN-*/manifests/` | the **complete** app as it stands at the end of day NN (`kubectl apply -k`) |
+| `StageNN-*/LAB-MANUAL.md` | that day's Part A + Part B steps, with checkpoints |
+| `StageNN-*/OUTPUT.md` | a verified run on the reference cluster |
 
 ## Stages
 
 | Day | Stage | Adds to the app |
 |---|---|---|
-| 07 | [stage-07-build-deploy-health](stage-07-build-deploy-health/LAB-MANUAL.md) | **build + push the images**, deploy all 3 tiers, probes per tier, requests/limits, LimitRange + ResourceQuota, Guaranteed QoS for redis |
+| 07 | [Stage01-build-deploy-health](Stage01-build-deploy-health/LAB-MANUAL.md) | **build + push the images**, deploy all 3 tiers, probes per tier, requests/limits, LimitRange + ResourceQuota, Guaranteed QoS for redis |
 | 08 | *(planned)* | PodDisruptionBudgets; back up, delete and restore the namespace with the counter preserved |
 | 09 | *(planned)* | HPA on `api`, driven by `/api/cpu` load through the Ingress |
 | 10 | *(planned)* | PriorityClass for redis, preferred anti-affinity |
@@ -54,14 +54,13 @@ Every day has two parts:
 | 13 | *(planned)* | the app as one Helm chart in your GitLab repo; images in Harbor |
 | 14 | *(planned)* | Argo CD deploys it from git, self-heals drift; final acceptance checklist |
 
-Design and decisions: [DOC/PHASE_17_CAPSTONE_PLAN.md](../DOC/PHASE_17_CAPSTONE_PLAN.md).
 
 ## Missed a day? Catch up in one command
 
 Each stage's `manifests/` folder is the full app, not a diff:
 
 ```bash
-kubectl apply -k CAPSTONE/stage-NN-<name>/manifests/
+kubectl apply -k CAPSTONE/StageNN-<name>/manifests/
 ```
 
 It's safe to run over an earlier stage: the redis PVC and the counter are kept.

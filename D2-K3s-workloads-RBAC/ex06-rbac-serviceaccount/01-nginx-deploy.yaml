@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deploy
-  namespace: rbac-nginx-demo
+  namespace: d2-workloads-rbac
   labels:
     app: nginx-demo
 spec:

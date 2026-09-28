@@ -1,6 +1,6 @@
 # ex03 — verified run
 
-Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `day01`.
+Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `d2-workloads-rbac`.
 
 **Result: PASS** — with `REDIS_HOST=redis-primary` the app reaches the renamed
 Service and works; remove the env var and the app falls back to `redis`, which
@@ -28,7 +28,7 @@ $ kubectl exec deploy/python-app -- sh -c 'echo "REDIS_HOST=$REDIS_HOST"'
 REDIS_HOST=redis-primary
 
 $ kubectl exec deploy/python-app -- getent hosts redis-primary
-10.43.58.110      redis-primary.day01.svc.cluster.local redis-primary
+10.43.58.110      redis-primary.d2-workloads-rbac.svc.cluster.local redis-primary
 $ kubectl exec deploy/python-app -- getent hosts redis        ; echo "exit=$?"
 exit=2                                  # <- "redis" does NOT resolve
 

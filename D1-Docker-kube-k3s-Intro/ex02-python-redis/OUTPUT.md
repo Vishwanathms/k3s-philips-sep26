@@ -1,6 +1,6 @@
 # ex02 — verified run
 
-Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `day01`.
+Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `d1-intro`.
 
 **Result: PASS** — app and Redis both Running; `REDIS_HOST` is unset so the app
 uses its built-in default `redis`, which resolves to the Redis Service; the hit
@@ -33,7 +33,7 @@ $ kubectl exec deploy/python-app -- sh -c 'echo "REDIS_HOST=${REDIS_HOST:-<unset
 REDIS_HOST=<unset>
 
 $ kubectl exec deploy/python-app -- getent hosts redis
-10.43.98.115      redis.day01.svc.cluster.local redis
+10.43.98.115      redis.d1-intro.svc.cluster.local redis
 
 # --- hit the app 3x (NodePort 30901) ---
 $ curl -s http://192.168.230.103:30901/

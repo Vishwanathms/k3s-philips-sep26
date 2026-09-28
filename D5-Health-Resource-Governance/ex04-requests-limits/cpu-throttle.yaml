@@ -1,0 +1,18 @@
+# ex04b - CPU limits are enforced by THROTTLING, not killing. This
+# container spins a tight busy-loop on all available CPUs but is capped at
+# limits.cpu: 200m (0.2 of one core). It never gets OOMKilled or crashes -
+# kubectl top and the container's own cgroup stats just show it pinned at
+# ~0.2 cores no matter how much work it tries to do.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cpu-throttle-demo
+  namespace: d5-health
+spec:
+  containers:
+    - name: burner
+      image: busybox:1.36
+      command: ["sh", "-c", "while true; do :; done"]
+      resources:
+        requests: { cpu: 50m, memory: 16Mi }
+        limits: { cpu: 200m, memory: 32Mi }

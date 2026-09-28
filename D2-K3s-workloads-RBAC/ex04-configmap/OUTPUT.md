@@ -1,6 +1,6 @@
 # ex04 — verified run
 
-Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `day01`.
+Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `d2-workloads-rbac`.
 
 **Result: PASS** — `REDIS_HOST` is delivered from the ConfigMap via
 `configMapKeyRef`; patching the ConfigMap + `rollout restart` picks up changes;
@@ -27,7 +27,7 @@ data:
 kind: ConfigMap
 metadata:
   name: python-app-config
-  namespace: day01
+  namespace: d2-workloads-rbac
 
 # --- value arrived as an env var ---
 $ kubectl exec deploy/python-app -- sh -c 'echo "REDIS_HOST=$REDIS_HOST"'

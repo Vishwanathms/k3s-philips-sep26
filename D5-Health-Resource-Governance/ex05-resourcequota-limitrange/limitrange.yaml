@@ -1,0 +1,15 @@
+# ex05b - per-container guardrails within the namespace: if a container
+# doesn't specify requests/limits, these DEFAULTS are stamped onto it
+# automatically. If it DOES specify some, they must fall within min/max.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: team-limits
+  namespace: d5-health
+spec:
+  limits:
+    - type: Container
+      default:            { cpu: 100m, memory: 64Mi }   # applied if no limit set
+      defaultRequest:      { cpu: 50m,  memory: 32Mi }   # applied if no request set
+      min:                 { cpu: 10m,  memory: 8Mi }    # reject below this
+      max:                 { cpu: 500m, memory: 256Mi }  # reject above this

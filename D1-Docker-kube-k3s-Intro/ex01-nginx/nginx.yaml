@@ -2,6 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: d1-intro
   name: nginx-pod
   labels:
     app: nginx-pod
@@ -31,6 +32,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: d1-intro
   name: nginx-pod
   labels:
     app: nginx-pod

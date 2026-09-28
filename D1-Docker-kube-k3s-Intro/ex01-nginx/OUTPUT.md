@@ -1,7 +1,7 @@
 # ex01 — verified run
 
 Captured on **2026-09-08**, k3s `v1.36.4+k3s1`, node `lab-g2-vm2`
-(`192.168.230.103`), namespace `day01`.
+(`192.168.230.103`), namespace `d1-intro`.
 
 **Result: PASS** — 2/2 pods Running, Service has both endpoints, `HTTP 200` from
 the NodePort, nginx welcome page served.

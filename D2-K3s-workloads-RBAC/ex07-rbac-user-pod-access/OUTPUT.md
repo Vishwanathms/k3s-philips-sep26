@@ -10,21 +10,21 @@ operation matched the Role exactly, including `kubectl auth whoami` and
 ## Apply the namespace, workload, and RBAC objects
 
 ```console
-$ kubectl apply -f 00-namespace.yaml -f 01-demo-pods.yaml -f 02-demo-secret.yaml \
+$ kubectl apply -f ../00-namespace.yaml -f 01-demo-pods.yaml -f 02-demo-secret.yaml \
     -f 03-role.yaml -f 04-rolebinding.yaml
-namespace/rbac-user-pod-demo created
+namespace/d2-workloads-rbac created
 deployment.apps/demo-app created
 secret/demo-secret created
 role.rbac.authorization.k8s.io/pod-reader created
 rolebinding.rbac.authorization.k8s.io/pod-reader-binding created
 
-$ kubectl rollout status deployment/demo-app -n rbac-user-pod-demo --timeout=120s
+$ kubectl rollout status deployment/demo-app -n d2-workloads-rbac --timeout=120s
 Waiting for deployment "demo-app" rollout to finish: 0 out of 2 new replicas have been updated...
 Waiting for deployment "demo-app" rollout to finish: 0 of 2 updated replicas are available...
 Waiting for deployment "demo-app" rollout to finish: 1 of 2 updated replicas are available...
 deployment "demo-app" successfully rolled out
 
-$ kubectl get deploy,pods,role,rolebinding,secret -n rbac-user-pod-demo
+$ kubectl get deploy,pods,role,rolebinding,secret -n d2-workloads-rbac
 NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/demo-app   2/2     2            2           4s
 
@@ -66,7 +66,7 @@ Context "alice@k3s-lab" created.
 Switched to context "alice@k3s-lab".
 ==> Done. Use it with:
     kubectl --kubeconfig=alice-identity/alice.kubeconfig <command>
-    export KUBECONFIG=/home/labuser/Documents/k3s-training/Day-02-RBAC-ServiceAccount/ex07-rbac-user-pod-access/alice-identity/alice.kubeconfig   # or switch entirely
+    export KUBECONFIG=/home/labuser/Documents/k3s-training/D2-K3s-workloads-RBAC/ex07-rbac-user-pod-access/alice-identity/alice.kubeconfig   # or switch entirely
 ```
 
 `CN=alice` / `O=developers` round-tripped correctly through the CSR, and
@@ -91,7 +91,7 @@ designed: username from `CN`, group from `O`, plus the implicit
 ## Verify RBAC — allowed
 
 ```console
-$ KCFG=alice-identity/alice.kubeconfig; NS=rbac-user-pod-demo
+$ KCFG=alice-identity/alice.kubeconfig; NS=d2-workloads-rbac
 
 $ kubectl --kubeconfig="$KCFG" get pods -n "$NS"
 NAME                       READY   STATUS    RESTARTS   AGE
@@ -126,16 +126,16 @@ by `pod-reader`.
 
 ```console
 $ kubectl --kubeconfig="$KCFG" get secret demo-secret -n "$NS"
-Error from server (Forbidden): secrets "demo-secret" is forbidden: User "alice" cannot get resource "secrets" in API group "" in the namespace "rbac-user-pod-demo"
+Error from server (Forbidden): secrets "demo-secret" is forbidden: User "alice" cannot get resource "secrets" in API group "" in the namespace "d2-workloads-rbac"
 
 $ kubectl --kubeconfig="$KCFG" get deployment demo-app -n "$NS"
-Error from server (Forbidden): deployments.apps "demo-app" is forbidden: User "alice" cannot get resource "deployments" in API group "apps" in the namespace "rbac-user-pod-demo"
+Error from server (Forbidden): deployments.apps "demo-app" is forbidden: User "alice" cannot get resource "deployments" in API group "apps" in the namespace "d2-workloads-rbac"
 
 $ kubectl --kubeconfig="$KCFG" delete pod demo-app-b8cc868df-d2cz7 -n "$NS"
-Error from server (Forbidden): pods "demo-app-b8cc868df-d2cz7" is forbidden: User "alice" cannot delete resource "pods" in API group "" in the namespace "rbac-user-pod-demo"
+Error from server (Forbidden): pods "demo-app-b8cc868df-d2cz7" is forbidden: User "alice" cannot delete resource "pods" in API group "" in the namespace "d2-workloads-rbac"
 
 $ kubectl --kubeconfig="$KCFG" exec -n "$NS" demo-app-b8cc868df-d2cz7 -- ls /
-error: unable to upgrade connection: pods "demo-app-b8cc868df-d2cz7" is forbidden: User "alice" cannot create resource "pods/exec" in API group "" in the namespace "rbac-user-pod-demo"
+error: unable to upgrade connection: pods "demo-app-b8cc868df-d2cz7" is forbidden: User "alice" cannot create resource "pods/exec" in API group "" in the namespace "d2-workloads-rbac"
 
 $ kubectl --kubeconfig="$KCFG" get pods -A
 Error from server (Forbidden): pods is forbidden: User "alice" cannot list resource "pods" in API group "" at the cluster scope
@@ -148,7 +148,7 @@ Every denial correctly names `User "alice"` (not a ServiceAccount), the
 exact verb, resource, API group, and scope. Secrets and Deployments are
 denied because they're simply absent from the Role. Cluster-wide listing
 (`-A`) and the `default` namespace are denied because the RoleBinding is
-namespaced to `rbac-user-pod-demo` only — a Role/RoleBinding never
+namespaced to `d2-workloads-rbac` only — a Role/RoleBinding never
 grants cluster-wide access, unlike a ClusterRole/ClusterRoleBinding.
 
 ## `auth can-i` matrix (re-run against a freshly regenerated identity)
@@ -174,10 +174,10 @@ Identical result to the first run.
 ## Cleanup
 
 ```console
-$ kubectl delete namespace rbac-user-pod-demo --wait=true
-namespace "rbac-user-pod-demo" deleted
-$ kubectl get namespace rbac-user-pod-demo
-Error from server (NotFound): namespaces "rbac-user-pod-demo" not found
+$ kubectl delete namespace d2-workloads-rbac --wait=true
+namespace "d2-workloads-rbac" deleted
+$ kubectl get namespace d2-workloads-rbac
+Error from server (NotFound): namespaces "d2-workloads-rbac" not found
 
 $ ./scripts/cleanup-user-alice.sh
 certificatesigningrequest.certificates.k8s.io "alice-csr" deleted

@@ -8,7 +8,7 @@ namespace and has been tested on k3s `v1.36.4+k3s1`; see [OUTPUT.md](OUTPUT.md).
 
 | Object | Name | Purpose |
 |---|---|---|
-| Namespace | `rbac-nginx-demo` | isolates the exercise |
+| Namespace | `d2-workloads-rbac` | isolates the exercise |
 | Deployment | `nginx-deploy` | the only workload the operator may change |
 | ServiceAccount | `nginx-operator` | limited in-cluster identity |
 | Role / RoleBinding | `nginx-deployment-manager` | grants that identity its permissions |
@@ -31,19 +31,19 @@ kubectl config current-context
 ## Apply
 
 ```bash
-kubectl apply -f 00-namespace.yaml
+kubectl apply -f ../00-namespace.yaml
 kubectl apply -f 01-nginx-deploy.yaml
 kubectl apply -f 02-serviceaccount.yaml
 kubectl apply -f 03-role.yaml
 kubectl apply -f 04-rolebinding.yaml
-kubectl rollout status deployment/nginx-deploy -n rbac-nginx-demo --timeout=120s
-kubectl get deploy,pods,sa,role,rolebinding -n rbac-nginx-demo
+kubectl rollout status deployment/nginx-deploy -n d2-workloads-rbac --timeout=120s
+kubectl get deploy,pods,sa,role,rolebinding -n d2-workloads-rbac
 ```
 
 ## Verify RBAC by impersonating the ServiceAccount
 
 ```bash
-NS=rbac-nginx-demo
+NS=d2-workloads-rbac
 SA=system:serviceaccount:$NS:nginx-operator
 
 # Allowed
@@ -102,5 +102,5 @@ Never commit a token to the repository.
 ## Cleanup
 
 ```bash
-kubectl delete namespace rbac-nginx-demo
+kubectl delete namespace d2-workloads-rbac
 ```

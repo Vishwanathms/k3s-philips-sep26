@@ -10,6 +10,18 @@ pull-rate limit.
 > Use a Docker Hub **access token** (Account Settings → Security → New Access
 > Token), not your account password.
 
+## Namespace
+
+All manifests here are pinned to `d2-workloads-rbac`. Create it and make it your default,
+so every `kubectl` below needs no `-n`:
+
+```bash
+kubectl apply -f ../00-namespace.yaml
+kubectl config set-context --current --namespace=d2-workloads-rbac
+```
+
+Put it back when you're done: `kubectl config set-context --current --namespace=default`
+
 ## 1. Create the Secret
 
 ### Option A — from your existing `docker login` (easiest)

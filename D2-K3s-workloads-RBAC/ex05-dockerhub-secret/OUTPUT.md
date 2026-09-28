@@ -1,6 +1,6 @@
 # ex05 — verified run
 
-Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `day01`.
+Captured **2026-09-08**, k3s `v1.36.4+k3s1`, node `192.168.230.103`, ns `d2-workloads-rbac`.
 
 **Result: PASS (mechanism verified)** — an unauthorized pull fails with
 `pull access denied`; a `kubernetes.io/dockerconfigjson` Secret is created and

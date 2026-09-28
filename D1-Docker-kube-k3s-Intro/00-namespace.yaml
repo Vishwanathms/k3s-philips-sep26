@@ -1,0 +1,8 @@
+# Every D1 exercise runs in this one namespace, so the whole day tears down
+# with `kubectl delete namespace d1-intro`. Safe to re-apply.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: d1-intro
+  labels:
+    training: docker-kube-k3s-intro

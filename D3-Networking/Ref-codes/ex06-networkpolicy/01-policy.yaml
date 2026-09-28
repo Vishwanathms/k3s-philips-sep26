@@ -4,7 +4,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: web-default-deny-ingress
-  namespace: day02-networking
+  namespace: d3-networking
 spec:
   podSelector:
     matchLabels: { app: web }
@@ -14,7 +14,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: web-allow-approved-clients
-  namespace: day02-networking
+  namespace: d3-networking
 spec:
   podSelector:
     matchLabels: { app: web }

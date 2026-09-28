@@ -17,7 +17,7 @@ built) are in [LAB-MANUAL.md](LAB-MANUAL.md).
 
 | Object | Name | Purpose |
 |---|---|---|
-| Namespace | `rbac-user-pod-demo` | isolates the exercise |
+| Namespace | `d2-workloads-rbac` | isolates the exercise |
 | Deployment | `demo-app` (2 replicas, nginx) | the Pods `alice` is allowed to view |
 | Secret | `demo-secret` | dummy object used to prove the Role does *not* leak beyond Pods |
 | Role | `pod-reader` | `get/list/watch` on `pods`, `get` on `pods/log` — nothing else |
@@ -31,7 +31,7 @@ identity by name.
 ## Files
 
 ```
-00-namespace.yaml      Namespace rbac-user-pod-demo
+../00-namespace.yaml   Namespace d2-workloads-rbac (shared by all D2 labs)
 01-demo-pods.yaml      Deployment demo-app (the Pods to view)
 02-demo-secret.yaml    Secret demo-secret (negative-permission check)
 03-role.yaml           Role pod-reader (get/list/watch pods, get pods/log)
@@ -48,14 +48,14 @@ never be committed.
 ## Quick start
 
 ```bash
-kubectl apply -f 00-namespace.yaml -f 01-demo-pods.yaml -f 02-demo-secret.yaml \
+kubectl apply -f ../00-namespace.yaml -f 01-demo-pods.yaml -f 02-demo-secret.yaml \
   -f 03-role.yaml -f 04-rolebinding.yaml
-kubectl rollout status deployment/demo-app -n rbac-user-pod-demo --timeout=120s
+kubectl rollout status deployment/demo-app -n d2-workloads-rbac --timeout=120s
 
 ./scripts/create-user-alice.sh
 
 KCFG=alice-identity/alice.kubeconfig
-NS=rbac-user-pod-demo
+NS=d2-workloads-rbac
 
 kubectl --kubeconfig="$KCFG" auth whoami                 # Username: alice
 kubectl --kubeconfig="$KCFG" get pods -n "$NS"            # allowed
@@ -69,5 +69,5 @@ See [LAB-MANUAL.md](LAB-MANUAL.md) for the full walkthrough and
 
 ```bash
 ./scripts/cleanup-user-alice.sh
-kubectl delete namespace rbac-user-pod-demo
+kubectl delete namespace d2-workloads-rbac
 ```

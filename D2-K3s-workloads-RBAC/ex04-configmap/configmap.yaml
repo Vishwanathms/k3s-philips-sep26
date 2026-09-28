@@ -3,6 +3,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: d2-workloads-rbac
   name: python-app-config
   labels:
     app: python-app
