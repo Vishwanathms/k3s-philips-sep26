@@ -1,0 +1,15 @@
+# ex03 - updateMode "Off" means "recommend only, never touch running Pods."
+# Safe to leave on permanently even in production - it's a read-only
+# advisor until you deliberately switch modes (vpa-auto.yaml).
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: rightsize-me
+  namespace: day09-scaling
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rightsize-me
+  updatePolicy:
+    updateMode: "Off"

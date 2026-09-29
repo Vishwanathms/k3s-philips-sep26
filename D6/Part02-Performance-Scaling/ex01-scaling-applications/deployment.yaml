@@ -1,0 +1,31 @@
+# ex01 - a small Deployment to practice both ways of scaling: imperatively
+# (kubectl scale) and declaratively (edit replicas: in the manifest itself).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: day09-scaling
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: web }
+  template:
+    metadata:
+      labels: { app: web }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+          resources:
+            requests: { cpu: 50m, memory: 32Mi }
+            limits: { cpu: 200m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: day09-scaling
+spec:
+  selector: { app: web }
+  ports: [{ port: 80, targetPort: 80 }]

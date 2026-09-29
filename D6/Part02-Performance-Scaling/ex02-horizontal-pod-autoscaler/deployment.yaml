@@ -1,0 +1,33 @@
+# ex02 - the classic Kubernetes-docs HPA demo image: a tiny PHP/Apache app
+# whose "/" endpoint deliberately burns CPU computing sqrt() in a loop, so
+# request volume translates directly into CPU usage. requests.cpu: 200m is
+# what the HPA's percentage target is measured AGAINST (Slide/README math).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-apache
+  namespace: day09-scaling
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: php-apache }
+  template:
+    metadata:
+      labels: { app: php-apache }
+    spec:
+      containers:
+        - name: php-apache
+          image: registry.k8s.io/hpa-example
+          ports: [{ containerPort: 80 }]
+          resources:
+            requests: { cpu: 200m, memory: 32Mi }
+            limits: { cpu: 500m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-apache
+  namespace: day09-scaling
+spec:
+  selector: { app: php-apache }
+  ports: [{ port: 80, targetPort: 80 }]

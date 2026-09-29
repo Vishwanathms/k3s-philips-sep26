@@ -1,0 +1,23 @@
+# ex02 - scale php-apache between 1 and 5 replicas, targeting 50% of each
+# Pod's REQUESTED cpu (200m) - i.e. the HPA tries to keep average usage
+# around 100m per Pod, adding replicas as usage climbs above that and
+# removing them as it falls back below.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache
+  namespace: day09-scaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-apache
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50

@@ -1,0 +1,22 @@
+# ex03 - updateMode "Recreate": the VPA updater is now allowed to actually
+# EVICT the running Pod and let it come back with the recommender's
+# requests/limits applied (via the admission-controller webhook, at
+# creation time). Expect a brief restart of the single replica.
+#
+# ("Recreate" is the current explicit name for what used to be called
+# "Auto" - the VPA API deprecated the implicit "Auto" mode in favor of
+# naming the actual behavior: kubectl apply with the old value prints
+# "UpdateMode \"Auto\" is deprecated ... Use explicit update modes like
+# \"Recreate\", \"Initial\", or \"InPlaceOrRecreate\" instead.")
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: rightsize-me
+  namespace: day09-scaling
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rightsize-me
+  updatePolicy:
+    updateMode: "Recreate"

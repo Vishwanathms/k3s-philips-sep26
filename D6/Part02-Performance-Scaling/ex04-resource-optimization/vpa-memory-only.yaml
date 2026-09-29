@@ -1,0 +1,19 @@
+# ex04 - VPA controls MEMORY sizing only (controlledResources). It will
+# never touch cpu requests/limits on this Deployment, so it cannot fight
+# the HPA above - they're each authoritative over a different resource.
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: php-apache
+  namespace: day09-scaling
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-apache
+  updatePolicy:
+    updateMode: "Off"     # recommend only for this exercise - see README.md
+  resourcePolicy:
+    containerPolicies:
+      - containerName: "*"
+        controlledResources: ["memory"]

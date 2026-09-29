@@ -1,0 +1,32 @@
+# ex04 - the same php-apache app from ex02, reused to show the SAFE way to
+# combine HPA and VPA: never let both control the SAME metric on the SAME
+# workload at once (see README.md for why they fight if you do).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-apache
+  namespace: day09-scaling
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: php-apache }
+  template:
+    metadata:
+      labels: { app: php-apache }
+    spec:
+      containers:
+        - name: php-apache
+          image: registry.k8s.io/hpa-example
+          ports: [{ containerPort: 80 }]
+          resources:
+            requests: { cpu: 200m, memory: 32Mi }
+            limits: { cpu: 500m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-apache
+  namespace: day09-scaling
+spec:
+  selector: { app: php-apache }
+  ports: [{ port: 80, targetPort: 80 }]

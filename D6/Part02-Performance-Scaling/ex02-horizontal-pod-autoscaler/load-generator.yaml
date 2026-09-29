@@ -1,0 +1,20 @@
+# ex02 - hammers php-apache with parallel requests to drive its CPU usage
+# up. Delete this Pod (or scale it to 0 replicas of its own by deleting it)
+# to remove the load and watch the HPA scale back down.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: load-generator
+  namespace: day09-scaling
+spec:
+  containers:
+    - name: load-generator
+      image: busybox:1.36
+      command:
+        - sh
+        - -c
+        - |
+          for i in $(seq 1 8); do
+            ( while true; do wget -q -O- http://php-apache >/dev/null; done ) &
+          done
+          wait
