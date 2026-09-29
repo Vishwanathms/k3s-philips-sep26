@@ -1,0 +1,31 @@
+# Stage 05: PodDisruptionBudgets.
+# A PDB limits VOLUNTARY disruptions: evictions from `kubectl drain`, node
+# upgrades, cluster autoscaler. It does NOT stop crashes, OOM kills,
+# `kubectl delete pod`, or a node dying.
+#
+# web and api run 2 replicas each: keep at least 1 serving during maintenance.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: web }
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: web }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: api }
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: api }
+# No PDB for redis, on purpose. It has ONE replica, so any budget that
+# protects it ("minAvailable: 1") allows ZERO evictions, and `kubectl drain`
+# would wait on it forever. A singleton is protected by backups (this
+# stage's scripts), not by a PDB. See LAB-MANUAL step B3.

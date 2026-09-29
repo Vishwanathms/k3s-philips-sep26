@@ -1,0 +1,20 @@
+# The whole capstone app must fit in this budget, INCLUDING the HPA's
+# maximum. Stage 07: api may scale 2 -> 6. Each extra api Pod costs
+# 60m / 84Mi of requests and 600m / 320Mi of limits (app + linkerd-proxy).
+#   at 6 api Pods: requests ~560m / 792Mi, limits ~4550m / 2464Mi, 10 Pods
+# plus room for one rolling update (api surge 600m / 320Mi, web 300m / 128Mi).
+# If the quota is smaller than max replicas need, the HPA asks for Pods and
+# the ReplicaSet gets `exceeded quota`: the HPA silently caps early.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: capstone-quota
+  namespace: capstone
+spec:
+  hard:
+    pods: "15"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "6"
+    limits.memory: 3Gi
+    persistentvolumeclaims: "2"

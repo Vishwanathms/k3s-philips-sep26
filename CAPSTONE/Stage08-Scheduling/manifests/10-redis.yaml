@@ -1,0 +1,87 @@
+# DATA tier: redis with its data on a PersistentVolume (Day 06), so the
+# hit counter survives Pod restarts. appendonly = every write is logged
+# to /data/appendonly.* before it's acknowledged.
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: data }
+spec:
+  clusterIP: None            # headless: the StatefulSet's stable network identity
+  selector: { app: redis }
+  ports:
+    - name: redis
+      port: 6379
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: data }
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels: { app: redis }
+  template:
+    metadata:
+      labels: { app: redis, tier: data, app.kubernetes.io/part-of: capstone }
+    spec:
+      # Stage 08: highest capstone priority. If the node is full, redis is
+      # scheduled first and may preempt api/web/loadgen Pods.
+      priorityClassName: capstone-data
+      # Only on nodes labelled for data. Its volume is local-path, i.e. a
+      # directory on ONE node's disk: redis must never land anywhere else.
+      # `required...` = a hard rule: no such node, the Pod stays Pending.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - { key: capstone/data, operator: In, values: ["true"] }
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          args: ["redis-server", "--appendonly", "yes"]
+          ports:
+            - name: redis
+              containerPort: 6379
+          # requests == limits for every resource => QoS class Guaranteed.
+          # The data tier is the LAST thing the kubelet should evict.
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits:   { cpu: 100m, memory: 128Mi }
+          # Ready = redis actually answers a command, not just "port open".
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 5
+            timeoutSeconds: 2
+          # Started = redis has finished loading its AOF and answers. With a
+          # big dataset that replay can take a while, so allow up to 60s
+          # (30 x 2s). Liveness and readiness don't run until this passes.
+          startupProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 2
+            failureThreshold: 30
+          # Alive = the process still accepts TCP connections. No
+          # initialDelaySeconds: the startup probe already covers boot.
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 1Gi
