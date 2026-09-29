@@ -1,0 +1,25 @@
+# Drill L2: a client that asks for slow work. /api/cpu?ms=300 burns 300 ms
+# of CPU per request; 4 of them in parallel against 2 api Pods with a 500m
+# CPU limit (Stage 04, S2) queue up and get throttled. Watch api latency
+# climb in `linkerd viz stat` and on the dashboard, then delete this file.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgen-slow
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: drill }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: loadgen-slow }
+  template:
+    metadata:
+      labels: { app: loadgen-slow, tier: drill, app.kubernetes.io/part-of: capstone }
+    spec:
+      containers:
+        - name: loadgen
+          image: busybox:1.36
+          command: ["sh", "-c", "for w in 1 2 3 4; do (while true; do wget -q -O /dev/null 'http://api:8000/api/cpu?ms=300'; done) & done; wait"]
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits:   { cpu: 50m, memory: 32Mi }

@@ -55,9 +55,17 @@ kubectl get ingressclass           # traefik
 kubectl -n kube-system get pods -l app.kubernetes.io/name=traefik   # Running
 ```
 
-ex01's NetworkPolicy labs need a CNI that enforces policy. k3s's default
-Flannel does **not** — the `NetworkPolicy` objects apply cleanly but nothing
-is blocked. The lab manual says where this matters.
+NetworkPolicy **is** enforced here: Flannel alone does not implement policy,
+but k3s ships a separate network-policy controller that does, enabled by
+default. Confirm before the ex01 policy labs:
+
+```bash
+sudo journalctl -u k3s | grep -i "network policy controller" | head -1
+```
+
+If the cluster was installed with `--disable-network-policy`, the
+`NetworkPolicy` objects still apply cleanly but nothing is blocked, and the
+ex01 Step 4 checkpoints cannot pass.
 
 ## Reference material
 

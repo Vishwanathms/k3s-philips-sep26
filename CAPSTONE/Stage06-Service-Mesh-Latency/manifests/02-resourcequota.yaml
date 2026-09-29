@@ -1,0 +1,20 @@
+# The whole capstone app must fit in this budget.
+# Stage 06 adds a linkerd-proxy to every Pod (10m/20Mi requests, 100m/64Mi
+# limits each) and the loadgen Pod. Uses: requests ~320m CPU / 456Mi,
+# limits ~2150m CPU / 1184Mi, 6 Pods, 1 PVC. limits.cpu grows from 2 to 4, not
+# 3: a rolling restart runs old and new Pods side by side (api surge 600m,
+# web surge 300m), and with only 3 the new Pods were refused until the old
+# ones had gone.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: capstone-quota
+  namespace: capstone
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "4"
+    limits.memory: 2Gi
+    persistentvolumeclaims: "2"

@@ -1,0 +1,44 @@
+# Drill S1b: the same slow API, plus a startup probe. Expect 1/1 Running, 0 restarts.
+# Same capstone-api image; the command sleeps 30s before starting gunicorn,
+# like an app that loads a big model or warms a cache at boot.
+# Label app: api-slow, so the capstone `api` Service never sends it traffic.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-slow
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: drill }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: api-slow }
+  template:
+    metadata:
+      labels: { app: api-slow, tier: drill, app.kubernetes.io/part-of: capstone }
+    spec:
+      containers:
+        - name: api
+          image: localhost:5000/capstone-api:1.0.0
+          # trap + `sleep & wait`: sh as PID 1 ignores SIGTERM otherwise, and a
+          # liveness kill would wait out the 30s grace period.
+          command: ["sh", "-c", "trap 'exit 143' TERM; echo 'booting slowly (30s)'; sleep 30 & wait; exec gunicorn --bind 0.0.0.0:8000 --workers 2 app:app"]
+          ports:
+            - name: http
+              containerPort: 8000
+          resources:
+            requests: { cpu: 25m,  memory: 64Mi }
+            limits:   { cpu: 200m, memory: 128Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          # The startup probe gives boot up to 90s (45 x 2s): ~40s needed, plus
+          # margin for a slow or busy node. Liveness, the same strict one as in
+          # api-slow-no-startup, starts only after it passes.
+          startupProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 2
+            failureThreshold: 45
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+            failureThreshold: 3

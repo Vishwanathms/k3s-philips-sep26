@@ -1,0 +1,42 @@
+# Part A warm-up: a PodDisruptionBudget on plain nginx.
+# The readiness probe waits 20 s before the first check, so a replacement
+# Pod stays NOT Ready for ~20 s. That gives you time to watch the PDB
+# refuse a second eviction while the first replacement is still starting.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: capstone-warmup
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: capstone-warmup
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: nginx }
+  template:
+    metadata:
+      labels: { app: nginx }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          resources:
+            requests: { cpu: 25m,  memory: 32Mi }
+            limits:   { cpu: 100m, memory: 64Mi }
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+            initialDelaySeconds: 20
+            periodSeconds: 2
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nginx
+  namespace: capstone-warmup
+spec:
+  minAvailable: 1          # of the 2 replicas, at least 1 must stay Ready
+  selector:
+    matchLabels: { app: nginx }

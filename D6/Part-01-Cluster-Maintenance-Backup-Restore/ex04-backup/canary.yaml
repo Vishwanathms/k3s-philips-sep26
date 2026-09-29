@@ -1,0 +1,15 @@
+# ex04 - a small, distinctive object we'll back up, then (in ex05) delete
+# and restore, to PROVE the backup is real and not just a file that exists.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: canary
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-marker
+  namespace: canary
+data:
+  proof: "this-value-must-survive-a-restore"
+  created: "2026-09-13"

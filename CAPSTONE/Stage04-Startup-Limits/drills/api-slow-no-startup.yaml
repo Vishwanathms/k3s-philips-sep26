@@ -1,0 +1,40 @@
+# Drill S1a: a slow-starting API with ONLY a liveness probe. Expect CrashLoopBackOff.
+# Same capstone-api image; the command sleeps 30s before starting gunicorn,
+# like an app that loads a big model or warms a cache at boot.
+# Label app: api-slow, so the capstone `api` Service never sends it traffic.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-slow
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: drill }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: api-slow }
+  template:
+    metadata:
+      labels: { app: api-slow, tier: drill, app.kubernetes.io/part-of: capstone }
+    spec:
+      containers:
+        - name: api
+          image: localhost:5000/capstone-api:1.0.0
+          # trap + `sleep & wait`: sh as PID 1 ignores SIGTERM otherwise, and a
+          # liveness kill would wait out the 30s grace period.
+          command: ["sh", "-c", "trap 'exit 143' TERM; echo 'booting slowly (30s)'; sleep 30 & wait; exec gunicorn --bind 0.0.0.0:8000 --workers 2 app:app"]
+          ports:
+            - name: http
+              containerPort: 8000
+          resources:
+            requests: { cpu: 25m,  memory: 64Mi }
+            limits:   { cpu: 200m, memory: 128Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          # Only liveness, tuned for a fast app: first check at 5s, killed after
+          # 3 failures 10s apart (~25s). The app needs ~40s (30s + gunicorn boot). It never makes it.
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
