@@ -37,6 +37,11 @@ this stage just doesn't try to own it.
 
 ## Before starting
 
+- **Argo CD installed and ready** — see
+  [LAB-MANUAL-ArgoCD-Setup.md](LAB-MANUAL-ArgoCD-Setup.md) if this is a fresh
+  cluster. That manual's step A9 (`kustomize.buildOptions: --enable-helm`) is
+  **required** here: this stage's repo is a kustomization wrapping a Helm
+  chart, and without it the Application syncs to an empty render.
 - `Stage12-ArgoCD` running, healthy, **untouched** — this stage doesn't
   read or write anything under `Stage12-ArgoCD-local-git-repo/`
 - A GitHub repo, **private**, created empty (no README/gitignore)
@@ -46,6 +51,9 @@ this stage just doesn't try to own it.
 ```bash
 cd ~/Documents/k3s-training/CAPSTONE/Stage12-GitHub
 ssh -T git@github.com   # "Hi <you>! ... successfully authenticated"
+
+kubectl -n argocd get pods                                        # all Running
+kubectl -n argocd get cm argocd-cm -o jsonpath='{.data.kustomize\.buildOptions}{"\n"}'   # --enable-helm
 ```
 
 ---

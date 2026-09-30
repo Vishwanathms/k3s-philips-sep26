@@ -65,8 +65,14 @@ export NODE_IP=$(hostname -I | awk '{print $1}')
 kubectl -n capstone get pods                 # 6 Pods, all Running
 helm list -n capstone                        # STATUS deployed
 curl -s -H 'Host: capstone.k3s.local' http://$NODE_IP/api/hits; echo
-kubectl -n argocd get pods                   # Argo CD from Phase 16, already installed
+kubectl -n argocd get pods                   # all Running - if not, see the setup manual below
 ```
+
+**Argo CD not installed yet?** Follow
+[../Stage12-GitHub-argocd/LAB-MANUAL-ArgoCD-Setup.md](../Stage12-GitHub-argocd/LAB-MANUAL-ArgoCD-Setup.md)
+first — it installs Argo CD, exposes the UI through Traefik and secures the
+admin account. It also performs this stage's step G2 (`--enable-helm`), so if
+you used it you can read G2 and move on.
 
 ---
 
