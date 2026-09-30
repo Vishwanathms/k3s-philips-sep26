@@ -1,0 +1,9 @@
+# Override on top of chart/capstone/values.yaml, for this second,
+# GitHub-sourced copy of the app running alongside the original
+# (Stage12-ArgoCD, local git-daemon) demo in its own namespace.
+#
+# Only the ingress host needs to change - everything else (images, replica
+# counts, HPA range, quota) is identical, proving it's the same chart, just
+# a different git source and destination namespace.
+ingress:
+  host: capstone-github.k3s.local

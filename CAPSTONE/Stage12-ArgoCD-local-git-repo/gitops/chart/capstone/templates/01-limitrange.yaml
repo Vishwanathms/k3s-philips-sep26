@@ -1,0 +1,12 @@
+# Per-container defaults and bounds for anything created in this namespace.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: capstone-defaults
+  namespace: {{ .Release.Namespace }}
+spec:
+  limits:
+    - type: Container
+      defaultRequest: { cpu: 50m,  memory: 64Mi }
+      default:        { cpu: 200m, memory: 128Mi }
+      max:            { cpu: "1",  memory: 512Mi }

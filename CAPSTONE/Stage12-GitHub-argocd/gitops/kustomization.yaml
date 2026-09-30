@@ -1,0 +1,55 @@
+# Same wrapper pattern as Stage12-ArgoCD (kustomize --enable-helm over the
+# unmodified Stage11 chart), pointed at a second namespace so this can run
+# side by side with the original demo without touching it.
+#
+# Two things differ from Stage12-ArgoCD's kustomization.yaml:
+#  1. namespace + values-github.yaml (only the Ingress host changes - a
+#     second Ingress can't claim the same host as the first)
+#  2. PriorityClasses are deleted post-render (see patches below): they are
+#     CLUSTER-scoped, not namespaced (chart's own 03-priorityclasses.yaml
+#     comment warns about this), and the original Stage12-ArgoCD Application
+#     already owns capstone-data/capstone-app/capstone-batch. Two Argo CD
+#     Applications both trying to manage the same cluster-scoped object
+#     fight over it (each stamps its own tracking-id, causing permanent
+#     OutOfSync flapping) - so this copy doesn't manage them, it only
+#     references the existing names in priorityClassName: fields, which
+#     works fine since PriorityClass is a shared, cluster-wide resource.
+helmGlobals:
+  chartHome: chart
+
+helmCharts:
+  - name: capstone
+    releaseName: capstone-github
+    namespace: capstone-github
+    valuesFile: chart/capstone/values.yaml
+    additionalValuesFiles:
+      - values-github.yaml
+
+patches:
+  - target:
+      kind: PriorityClass
+      name: capstone-data
+    patch: |-
+      $patch: delete
+      apiVersion: scheduling.k8s.io/v1
+      kind: PriorityClass
+      metadata:
+        name: capstone-data
+  - target:
+      kind: PriorityClass
+      name: capstone-app
+    patch: |-
+      $patch: delete
+      apiVersion: scheduling.k8s.io/v1
+      kind: PriorityClass
+      metadata:
+        name: capstone-app
+  - target:
+      kind: PriorityClass
+      name: capstone-batch
+    patch: |-
+      $patch: delete
+      apiVersion: scheduling.k8s.io/v1
+      kind: PriorityClass
+      metadata:
+        name: capstone-batch

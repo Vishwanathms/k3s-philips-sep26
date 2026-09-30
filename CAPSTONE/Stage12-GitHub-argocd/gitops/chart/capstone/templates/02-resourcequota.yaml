@@ -1,0 +1,14 @@
+# Sized for the api HPA's maximum (values.api.hpa.maxReplicas).
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: capstone-quota
+  namespace: {{ .Release.Namespace }}
+spec:
+  hard:
+    pods: {{ .Values.quota.pods | quote }}
+    requests.cpu: {{ .Values.quota.requestsCpu | quote }}
+    requests.memory: {{ .Values.quota.requestsMemory }}
+    limits.cpu: {{ .Values.quota.limitsCpu | quote }}
+    limits.memory: {{ .Values.quota.limitsMemory }}
+    persistentvolumeclaims: "2"

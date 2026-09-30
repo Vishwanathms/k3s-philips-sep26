@@ -1,0 +1,29 @@
+# Stage 08: who matters most when the node is full. PriorityClasses are
+# cluster-scoped, not namespaced - a real Helm anti-pattern to watch for
+# (Day 13 ex06): a second `helm install` of this chart under a different
+# release name would collide on these names. Fine here because this chart
+# is only ever installed once per cluster.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capstone-data
+  labels: { app.kubernetes.io/part-of: capstone }
+value: 100000
+description: "capstone data tier (redis): scheduled first, may preempt app and batch Pods"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capstone-app
+  labels: { app.kubernetes.io/part-of: capstone }
+value: 10000
+description: "capstone serving tiers (api, web)"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capstone-batch
+  labels: { app.kubernetes.io/part-of: capstone }
+value: -100
+preemptionPolicy: Never
+description: "capstone background work (loadgen): lowest, waits instead of evicting others"

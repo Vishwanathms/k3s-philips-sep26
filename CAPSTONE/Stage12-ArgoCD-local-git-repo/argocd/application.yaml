@@ -1,0 +1,22 @@
+# Stage12 G2: Argo CD deploys capstone from git instead of `helm upgrade`.
+# Manual sync to start (G3 proves a zero-diff take-over of the live,
+# Helm-installed capstone namespace before anything is allowed to touch it
+# automatically). G4 turns on automated + selfHeal.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: capstone
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git://192.168.230.103/capstone-gitops.git
+    targetRevision: main
+    path: .
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: capstone
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

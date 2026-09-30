@@ -1,0 +1,38 @@
+# Let the VPA RECOMMEND sizes for web and redis only. updateMode "Off" =
+# never evicts or changes anything. No VPA on api: the HPA already owns
+# api's CPU requests indirectly; a VPA changing them too would fight it.
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: web
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: web }
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  updatePolicy:
+    updateMode: "Off"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: linkerd-proxy
+        mode: "Off"
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: redis
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: data }
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: redis
+  updatePolicy:
+    updateMode: "Off"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: linkerd-proxy
+        mode: "Off"

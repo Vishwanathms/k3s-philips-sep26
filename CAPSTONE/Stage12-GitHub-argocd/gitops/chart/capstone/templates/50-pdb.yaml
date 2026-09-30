@@ -1,0 +1,25 @@
+# web and api run >=2 replicas: keep at least 1 serving during maintenance.
+# No PDB for redis, on purpose - see Stage05's LAB-MANUAL step B3: a
+# singleton is protected by backups, not by a PDB that would block
+# `kubectl drain` forever.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: web }
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: web }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: api }
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: api }

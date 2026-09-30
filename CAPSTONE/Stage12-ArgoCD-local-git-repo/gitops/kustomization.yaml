@@ -1,0 +1,15 @@
+# Wraps the Stage11 Helm chart so Argo CD's kustomize engine (--enable-helm)
+# renders it, instead of Argo CD's native Helm source type. Same manifests
+# either way - this just proves the two integrate.
+#
+# chartHome has no `repo:` for the capstone chart below, so kustomize looks
+# for an already-vendored chart at chartHome/capstone instead of running
+# `helm pull` - there's nothing to pull from, the chart lives in this repo.
+helmGlobals:
+  chartHome: chart
+
+helmCharts:
+  - name: capstone
+    releaseName: capstone
+    namespace: capstone
+    valuesFile: chart/capstone/values.yaml

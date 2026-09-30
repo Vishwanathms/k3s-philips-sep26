@@ -1,0 +1,22 @@
+# Stage12-GitHub G4: same Argo CD pattern as Stage12-ArgoCD, sourced from
+# a real GitHub repo instead of the local git-daemon stand-in, deployed
+# into its own namespace (capstone-github) so it runs side by side with
+# the original demo without touching it.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: capstone-github
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Vishwanathms/k3s-helm-argocd-capstone.git
+    targetRevision: main
+    path: .
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: capstone-github
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
