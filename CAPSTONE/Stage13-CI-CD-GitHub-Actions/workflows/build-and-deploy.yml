@@ -1,0 +1,70 @@
+# Capstone Stage 13: build the app images, push them to this VM's local
+# registry, bump the Helm chart's image tags, and push that back - which
+# Argo CD (Stage 12) then syncs.
+#
+# The `paths: [app/**]` filter is the loop-prevention the stage asked for:
+# this workflow's own "bump chart/values.yaml" commit only touches
+# chart/capstone/values.yaml, never anything under app/, so that commit
+# does not match the filter and does not re-trigger the workflow. Without
+# it, every CI commit would trigger another CI run, forever.
+name: Capstone build, push, and gitops bump
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+
+# The last step pushes a commit back to this repo using the default
+# GITHUB_TOKEN (no extra credential needed) - it needs write access.
+# Also set in the repo's Settings > Actions > General > Workflow
+# permissions if this block alone isn't enough for the org's default.
+permissions:
+  contents: write
+
+# One image-bump commit at a time, in order - two overlapping runs racing
+# to push chart/capstone/values.yaml would fight over the same line.
+concurrency:
+  group: capstone-image-bump
+  cancel-in-progress: false
+
+jobs:
+  build-push-bump:
+    runs-on: self-hosted
+    env:
+      REGISTRY: localhost:5000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute image tag (short SHA)
+        id: tag
+        run: echo "tag=${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Build api image
+        run: docker build -t "$REGISTRY/capstone-api:${{ steps.tag.outputs.tag }}" app/api
+
+      - name: Build web image
+        run: docker build -t "$REGISTRY/capstone-web:${{ steps.tag.outputs.tag }}" app/web
+
+      - name: Push images to the local registry
+        run: |
+          docker push "$REGISTRY/capstone-api:${{ steps.tag.outputs.tag }}"
+          docker push "$REGISTRY/capstone-web:${{ steps.tag.outputs.tag }}"
+
+      - name: Bump chart/capstone/values.yaml
+        run: |
+          yq -i '.api.image.tag = "${{ steps.tag.outputs.tag }}"' chart/capstone/values.yaml
+          yq -i '.web.image.tag = "${{ steps.tag.outputs.tag }}"' chart/capstone/values.yaml
+
+      - name: Commit and push the chart bump
+        run: |
+          git config user.name "capstone-ci-bot"
+          git config user.email "ci@lab-g2-vm2.local"
+          git add chart/capstone/values.yaml
+          if git diff --cached --quiet; then
+            echo "values.yaml already at ${{ steps.tag.outputs.tag }}, nothing to commit"
+            exit 0
+          fi
+          git commit -m "ci: bump capstone images to ${{ steps.tag.outputs.tag }}"
+          git push origin HEAD:main
