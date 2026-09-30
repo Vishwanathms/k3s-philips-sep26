@@ -1,0 +1,35 @@
+# Punches exactly one hole in the deny-all baseline: anything in this
+# namespace may reach "web" on port 80. "db" stays fully unreachable.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web-ingress
+  namespace: day11-security
+spec:
+  podSelector:
+    matchLabels: { app: web }
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+---
+# web is still allowed to reach DNS (needed by anything doing name
+# resolution) and nothing else - egress stays deny-all otherwise.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: day11-security
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

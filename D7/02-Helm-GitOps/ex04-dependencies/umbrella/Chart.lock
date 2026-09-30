@@ -1,0 +1,9 @@
+dependencies:
+- name: web
+  repository: file://charts/web
+  version: 0.1.0
+- name: common
+  repository: https://charts.bitnami.com/bitnami
+  version: 2.41.0
+digest: sha256:58f5ccd431b775266101297badf9b99673779ed4e1f6e8e9edbde417590649af
+generated: "2026-09-16T09:01:28.408877156+05:30"

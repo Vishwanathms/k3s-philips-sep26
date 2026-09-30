@@ -1,0 +1,28 @@
+# Stage 06: the namespace joins the Linkerd service mesh.
+# linkerd.io/inject: every Pod created here gets a linkerd-proxy sidecar,
+# which measures latency, success rate and request rate per hop.
+# config.linkerd.io/proxy-*: size that sidecar. Without these the LimitRange
+# would give each proxy 200m CPU / 128Mi of limits and blow the ResourceQuota.
+#
+# Stage 09: Pod Security Admission at the strictest level. The API server
+# now REJECTS any Pod here that could run as root, escalate privileges, keep
+# Linux capabilities or skip seccomp. `warn` and `audit` echo the same level
+# so kubectl prints the reason and the audit log records it.
+# This only works because Linkerd runs as a CNI plugin (scripts/install-linkerd-cni.sh):
+# the default linkerd-init container needs NET_ADMIN/NET_RAW and fails even `baseline`.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: capstone
+  labels:
+    app.kubernetes.io/part-of: capstone
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
+  annotations:
+    linkerd.io/inject: enabled
+    config.linkerd.io/proxy-cpu-request: 10m
+    config.linkerd.io/proxy-cpu-limit: 100m
+    config.linkerd.io/proxy-memory-request: 20Mi
+    config.linkerd.io/proxy-memory-limit: 64Mi

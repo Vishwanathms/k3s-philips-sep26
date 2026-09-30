@@ -1,0 +1,19 @@
+# The missing piece: allow-web-ingress only authorized web's INGRESS side.
+# NetworkPolicy requires BOTH sides to permit traffic - the client's
+# egress must be allowed too, or the connection still gets refused even
+# though the target explicitly allows it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-web
+  namespace: day11-security
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: { app: web }
+      ports:
+        - protocol: TCP
+          port: 80

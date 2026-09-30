@@ -1,0 +1,31 @@
+# The fix: exactly the verbs/resources this workload actually needs
+# (read-only visibility into its own namespace's Pods), nothing else.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: least-privilege-sa
+  namespace: day11-security
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: day11-security
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-reader-binding
+  namespace: day11-security
+subjects:
+  - kind: ServiceAccount
+    name: least-privilege-sa
+    namespace: day11-security
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: template-lab
+description: A minimal chart built to demonstrate Helm's templating engine directly
+type: application
+version: 0.1.0
+appVersion: "1.0"

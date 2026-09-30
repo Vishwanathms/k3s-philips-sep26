@@ -1,0 +1,19 @@
+# Same image, only difference from a plain Pod: an explicit
+# seccompProfile. Contrasts directly with the cluster's real default
+# (unconfined/no filter) confirmed in this lab's own OUTPUT.md.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seccheck-runtimedefault
+  namespace: day11-security
+spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["sh", "-c", "sleep 3600"]
+      resources:
+        requests: { cpu: 10m, memory: 16Mi }
+        limits: { cpu: 50m, memory: 32Mi }

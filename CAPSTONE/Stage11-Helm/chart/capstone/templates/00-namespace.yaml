@@ -1,0 +1,19 @@
+# Stage 06: the namespace joins the Linkerd service mesh.
+# Stage 09: Pod Security Admission at the strictest level; only works
+# because Linkerd runs as a CNI plugin (Stage09's install-linkerd-cni.sh).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: capstone
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
+  annotations:
+    linkerd.io/inject: enabled
+    config.linkerd.io/proxy-cpu-request: 10m
+    config.linkerd.io/proxy-cpu-limit: 100m
+    config.linkerd.io/proxy-memory-request: 20Mi
+    config.linkerd.io/proxy-memory-limit: 64Mi

@@ -1,0 +1,7 @@
+# Values for subcharts are namespaced under the subchart's own name -
+# "web:" here only ever reaches the web/ subchart's own values.yaml.
+web:
+  replicaCount: 1
+  resources:
+    requests: { cpu: 10m, memory: 16Mi }
+    limits: { cpu: 50m, memory: 32Mi }

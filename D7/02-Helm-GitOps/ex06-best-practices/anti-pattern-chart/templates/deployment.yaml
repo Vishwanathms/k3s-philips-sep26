@@ -1,0 +1,22 @@
+# Deliberately full of real anti-patterns, to see what helm lint (and a
+# human reviewer) actually catches vs. silently lets through.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-hardcoded-app-name        # anti-pattern: not templated, two installs of this chart collide
+  namespace: default                  # anti-pattern: hardcodes the namespace, ignores -n entirely
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-hardcoded-app-name
+  template:
+    metadata:
+      labels:
+        app: my-hardcoded-app-name    # anti-pattern: none of the recommended app.kubernetes.io/* labels
+    spec:
+      containers:
+        - name: app
+          image: busybox:latest       # anti-pattern: floating tag, not reproducible
+          command: ["sh", "-c", "sleep 3600"]
+          # anti-pattern: no resources: block at all - can consume unbounded CPU/memory

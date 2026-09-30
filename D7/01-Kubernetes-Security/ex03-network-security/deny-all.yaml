@@ -1,0 +1,11 @@
+# The security baseline every namespace should start from: deny ALL
+# ingress and egress by default. An empty podSelector matches every Pod in
+# the namespace; no ingress/egress rules means "allow nothing".
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: day11-security
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]

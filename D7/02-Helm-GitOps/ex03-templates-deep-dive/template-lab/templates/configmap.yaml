@@ -1,0 +1,22 @@
+# Demonstrates: include (named template), built-in objects (.Release,
+# .Chart, .Values), if/else, range over a list, and a pipeline with the
+# `default` function.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "template-lab.fullname" . }}-config
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    chart-version: {{ .Chart.Version }}
+data:
+  environment: {{ .Values.environment }}
+  {{- if eq .Values.environment "production" }}
+  log-level: "warn"
+  {{- else }}
+  log-level: "debug"
+  {{- end }}
+  database-host: {{ .Values.databaseHost | default "db.internal.local" | quote }}
+  feature-flags: |
+    {{- range .Values.featureFlags }}
+    - {{ . }}
+    {{- end }}

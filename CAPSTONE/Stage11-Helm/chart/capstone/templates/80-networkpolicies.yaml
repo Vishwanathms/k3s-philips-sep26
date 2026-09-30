@@ -1,0 +1,119 @@
+# Zero trust between the tiers: default-deny, then allow exactly the path
+# a browser request takes (Traefik -> web -> api -> redis, loadgen -> web),
+# plus DNS and the Linkerd control plane every Pod needs to go Ready.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone }
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-and-linkerd
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone }
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+  egress:
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: linkerd } }
+      ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 8086 }
+        - { protocol: TCP, port: 8090 }
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: linkerd-viz } }
+      ports:
+        - { protocol: TCP, port: 4190 }
+        - { protocol: TCP, port: 4191 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: web }
+spec:
+  podSelector: { matchLabels: { app: web } }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { app.kubernetes.io/name: traefik } }
+        - podSelector: { matchLabels: { app: loadgen } }
+      ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 4143 }
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app: api } }
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 4143 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: api }
+spec:
+  podSelector: { matchLabels: { app: api } }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: web } }
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 4143 }
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app: redis } }
+      ports:
+        - { protocol: TCP, port: 6379 }
+        - { protocol: TCP, port: 4143 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: data }
+spec:
+  podSelector: { matchLabels: { app: redis } }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: api } }
+      ports:
+        - { protocol: TCP, port: 6379 }
+        - { protocol: TCP, port: 4143 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loadgen
+  namespace: {{ .Release.Namespace }}
+  labels: { app.kubernetes.io/part-of: capstone, tier: loadgen }
+spec:
+  podSelector: { matchLabels: { app: loadgen } }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app: web } }
+      ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 4143 }

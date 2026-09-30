@@ -1,0 +1,34 @@
+# A real CIS Kubernetes Benchmark run against THIS node's actual config
+# files, using kube-bench's own k3s-specific profile (k3s ships different
+# file layouts/paths than vanilla kubeadm, so the generic CIS profile
+# would false-positive heavily - k3s-cis-1.24 knows k3s's real paths).
+# Read-only host mounts, hostPID to see real host processes, no writes.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kube-bench
+  namespace: day11-security
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      hostPID: true
+      containers:
+        - name: kube-bench
+          image: docker.io/aquasec/kube-bench:latest
+          command: ["kube-bench", "run", "--targets", "node", "--benchmark", "k3s-cis-1.24"]
+          volumeMounts:
+            - { name: var-lib-rancher, mountPath: /var/lib/rancher, readOnly: true }
+            - { name: etc-rancher, mountPath: /etc/rancher, readOnly: true }
+            - { name: etc-systemd, mountPath: /etc/systemd, readOnly: true }
+            - { name: usr-lib-systemd, mountPath: /usr/lib/systemd, readOnly: true }
+      volumes:
+        - name: var-lib-rancher
+          hostPath: { path: /var/lib/rancher }
+        - name: etc-rancher
+          hostPath: { path: /etc/rancher }
+        - name: etc-systemd
+          hostPath: { path: /etc/systemd }
+        - name: usr-lib-systemd
+          hostPath: { path: /usr/lib/systemd }

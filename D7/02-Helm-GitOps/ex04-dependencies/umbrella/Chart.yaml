@@ -1,0 +1,19 @@
+apiVersion: v2
+name: umbrella
+description: An umbrella chart pulling in one LOCAL subchart and one REAL remote subchart
+type: application
+version: 0.1.0
+appVersion: "1.0"
+dependencies:
+  # A local subchart, vendored right in charts/ - the common pattern for a
+  # multi-service app owned by one team (each service = one subchart).
+  - name: web
+    version: "0.1.0"
+    repository: "file://charts/web"
+  # A REAL remote dependency - bitnami's "common" library chart. It's a
+  # library chart (type: library) - it contributes template HELPERS only,
+  # deploys zero resources itself, which keeps this lab's footprint light
+  # while still exercising a genuine `helm dependency update` from a repo.
+  - name: common
+    version: "2.x.x"
+    repository: "https://charts.bitnami.com/bitnami"

@@ -1,0 +1,33 @@
+# Stage 08: who matters most when the node is full.
+# PriorityClasses are cluster-wide (not namespaced), so they carry a
+# capstone- prefix. Higher value = scheduled first, and may PREEMPT (evict)
+# lower-priority Pods to make room. Everything without a class gets 0.
+#
+#   capstone-data   100000  redis: the only tier holding data
+#   capstone-app     10000  api, web: serve users
+#   capstone-batch    -100  loadgen: nice to have; never evicts anyone
+# (kube-system's own classes are ~2,000,000,000: nothing here outranks them.)
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capstone-data
+  labels: { app.kubernetes.io/part-of: capstone }
+value: 100000
+description: "capstone data tier (redis): scheduled first, may preempt app and batch Pods"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capstone-app
+  labels: { app.kubernetes.io/part-of: capstone }
+value: 10000
+description: "capstone serving tiers (api, web)"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capstone-batch
+  labels: { app.kubernetes.io/part-of: capstone }
+value: -100
+preemptionPolicy: Never
+description: "capstone background work (loadgen): lowest, waits instead of evicting others"

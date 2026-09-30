@@ -1,0 +1,10 @@
+environment: staging
+featureFlags:
+  - beta-search
+  - dark-mode
+replicaCount: 2
+resourceLimits:
+  cpu: 100m
+  memory: 64Mi
+# deliberately left unset - demonstrates `default` and `required` functions
+databaseHost:

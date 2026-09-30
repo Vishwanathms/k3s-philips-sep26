@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app: {{ .Release.Name }}-web }
+  template:
+    metadata:
+      labels: { app: {{ .Release.Name }}-web }
+    spec:
+      containers:
+        - name: web
+          image: busybox:1.36
+          command: ["sh", "-c", "sleep 3600"]
+          resources:
+            requests: {{ toYaml .Values.resources.requests | nindent 14 }}
+            limits: {{ toYaml .Values.resources.limits | nindent 14 }}

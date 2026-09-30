@@ -1,0 +1,135 @@
+# Stage 09: zero trust between the tiers. Start from "nothing may talk to
+# anything", then allow exactly the path a browser request takes:
+#
+#   Traefik ──8080──► web ──8000──► api ──6379──► redis
+#   loadgen ──8080──► web
+#
+# Everything else is dropped: web can't reach redis, loadgen can't reach
+# api, nothing in capstone can reach the internet.
+#
+# Enforced by k3s's built-in network policy controller (kube-router), no
+# extra CNI needed.
+#
+# Linkerd adds two things every rule has to allow:
+#   4143  the proxy's inbound port. For "opaque" protocols like redis the
+#         calling proxy connects to 4143 directly, not to 6379.
+#   linkerd control plane (identity 8080, destination 8086, policy 8090):
+#         without it the proxies can't get certificates and never go Ready.
+#   linkerd-viz (tap 4190, metrics 4191): the dashboard's data source.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone }
+spec:
+  podSelector: {}                      # every Pod in the namespace
+  policyTypes: [Ingress, Egress]       # no rules listed = nothing allowed
+---
+# Every Pod: DNS, plus the Linkerd control plane for its proxy.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-and-linkerd
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone }
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+  egress:
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { k8s-app: kube-dns } }
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: linkerd } }
+      ports:
+        - { protocol: TCP, port: 8080 }   # identity: mTLS certificates
+        - { protocol: TCP, port: 8086 }   # destination: service discovery
+        - { protocol: TCP, port: 8090 }   # policy
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: linkerd-viz } }
+      ports:
+        - { protocol: TCP, port: 4190 }   # tap
+        - { protocol: TCP, port: 4191 }   # proxy metrics (Prometheus)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: web }
+spec:
+  podSelector: { matchLabels: { app: web } }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } }
+          podSelector: { matchLabels: { app.kubernetes.io/name: traefik } }
+        - podSelector: { matchLabels: { app: loadgen } }
+      ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 4143 }
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app: api } }
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 4143 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: api }
+spec:
+  podSelector: { matchLabels: { app: api } }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: web } }
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 4143 }
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app: redis } }
+      ports:
+        - { protocol: TCP, port: 6379 }
+        - { protocol: TCP, port: 4143 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: data }
+spec:
+  podSelector: { matchLabels: { app: redis } }
+  policyTypes: [Ingress]               # redis never starts a connection itself
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: api } }
+      ports:
+        - { protocol: TCP, port: 6379 }
+        - { protocol: TCP, port: 4143 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: loadgen
+  namespace: capstone
+  labels: { app.kubernetes.io/part-of: capstone, tier: loadgen }
+spec:
+  podSelector: { matchLabels: { app: loadgen } }
+  policyTypes: [Egress]                # nothing ever connects to loadgen
+  egress:
+    - to:
+        - podSelector: { matchLabels: { app: web } }
+      ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 4143 }
